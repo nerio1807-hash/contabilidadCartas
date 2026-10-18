@@ -595,6 +595,53 @@
       border: 1px solid var(--border);
     }
 
+    .green { color: #4ade80; }
+
+    .vv-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem;
+    }
+
+    .vv-row img {
+      width: 40px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .vv-row .vv-nombre {
+      flex: 1;
+      font-size: 0.85rem;
+      line-height: 1.2;
+    }
+
+    .vv-row .vv-nombre small {
+      display: block;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .vv-row input {
+      width: 72px;
+      padding: 0.35rem;
+      margin: 0;
+    }
+
+    .vv-quitar {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.2rem;
+    }
+
     @media (max-width: 600px) {
       table { font-size: 0.85rem; }
       th, td { padding: 0.5rem 0.3rem; }
@@ -743,6 +790,9 @@
       <section id="tab-ventas" class="hidden">
         <div class="panel">
           <h2>Historial de ventas</h2>
+          <div style="margin-bottom:1rem">
+            <button type="button" class="btn-success" onclick="abrirVentaVarias()">💰 Vender varias cartas</button>
+          </div>
           <div style="overflow-x:auto">
             <table>
               <thead>
@@ -902,12 +952,43 @@
   <div id="modal-cartas" class="modal-overlay hidden">
     <div class="modal modal-picker">
       <h3>Elegir cartas <span id="picker-count" style="color:var(--muted);font-weight:400;font-size:0.9rem"></span></h3>
+      <div class="filters" id="picker-filtros-cat" style="margin-bottom:0.75rem;padding:0.5rem">
+        <span class="filters-label">Categoría:</span>
+      </div>
       <input type="text" id="picker-buscar" placeholder="🔍 Buscar por nombre..." style="margin-bottom:0.75rem">
       <div class="picker-grid" id="picker-grid"></div>
       <p class="empty hidden" id="picker-empty" style="padding:1rem 0">No hay cartas que coincidan.</p>
       <div class="modal-actions">
         <button type="button" class="btn-danger" onclick="cerrarPicker()">Cancelar</button>
         <button type="button" class="btn-success" onclick="cerrarPicker(true)">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VENDER VARIAS -->
+  <div id="modal-vender-varias" class="modal-overlay hidden">
+    <div class="modal modal-picker">
+      <div id="vv-paso1">
+        <h3>Vender varias cartas</h3>
+        <div class="filters" id="vv-filtros-cat" style="margin-bottom:0.75rem;padding:0.5rem">
+          <span class="filters-label">Categoría:</span>
+        </div>
+        <input type="text" id="vv-buscar" placeholder="🔍 Buscar por nombre..." style="margin-bottom:0.75rem">
+        <div class="picker-grid" id="vv-grid"></div>
+        <p class="empty hidden" id="vv-empty" style="padding:1rem 0">No hay cartas disponibles que coincidan.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" onclick="cerrarVentaVarias()">Cancelar</button>
+          <button type="button" class="btn-success" onclick="vvPasoResumen()">Siguiente: <span id="vv-count">0</span> elegidas</button>
+        </div>
+      </div>
+      <div id="vv-paso2" class="hidden">
+        <h3>Revisa tu venta</h3>
+        <div id="vv-lista"></div>
+        <p style="margin:0.75rem 0"><strong>Total: <span id="vv-total" class="green">$0</span></strong></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" onclick="vvVolverPaso1()">← Elegir cartas</button>
+          <button type="button" class="btn-success" onclick="confirmarVentaVarias()">Registrar venta</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1429,10 +1510,187 @@
       }
     }
 
+    // ---- Vender varias cartas (desde imágenes) ----
+    let vvSel = [];
+
+    function abrirVentaVarias() {
+      vvSel = [];
+      vvCat = "todos";
+      document.getElementById("vv-buscar").value = "";
+      document.getElementById("vv-paso1").classList.remove("hidden");
+      document.getElementById("vv-paso2").classList.add("hidden");
+      renderVVGrid();
+      document.getElementById("modal-vender-varias").classList.remove("hidden");
+    }
+
+    function cerrarVentaVarias() {
+      vvSel = [];
+      document.getElementById("modal-vender-varias").classList.add("hidden");
+    }
+
+    function renderVVGrid() {
+      pintarFiltroCat("vv-filtros-cat", vvCat, (cat) => {
+        vvCat = cat;
+        renderVVGrid();
+      });
+      const q = document.getElementById("vv-buscar").value.toLowerCase().trim();
+      const lista = data.productos.filter(p =>
+        (p.cantidad || 0) > 0 &&
+        (vvCat === "todos" || (p.categoria || "Pokémon") === vvCat) &&
+        (!q || (p.nombre || "").toLowerCase().includes(q))
+      );
+      document.getElementById("vv-count").textContent = vvSel.length;
+      const grid = document.getElementById("vv-grid");
+      grid.innerHTML = lista.map(p => `
+        <div class="picker-card ${vvSel.includes(p.id) ? "sel" : ""}" data-id="${p.id}">
+          ${p.foto
+            ? `<img src="${escapeHtml(p.foto)}" alt="">`
+            : '<div style="aspect-ratio:5/7;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🎴</div>'}
+          <div class="p-nombre">${escapeHtml(p.nombre)}</div>
+          <div style="font-size:0.65rem;color:var(--muted)">disp: ${p.cantidad}</div>
+        </div>`).join("");
+      document.getElementById("vv-empty").classList.toggle("hidden", lista.length > 0);
+      grid.querySelectorAll(".picker-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const id = card.dataset.id;
+          const i = vvSel.indexOf(id);
+          if (i === -1) vvSel.push(id); else vvSel.splice(i, 1);
+          card.classList.toggle("sel");
+          document.getElementById("vv-count").textContent = vvSel.length;
+        });
+      });
+    }
+
+    function vvTotal() {
+      let total = 0;
+      document.querySelectorAll("#vv-lista .vv-row").forEach(row => {
+        const cant = Number(row.querySelector(".vv-cant").value) || 0;
+        const precio = Number(row.querySelector(".vv-precio").value) || 0;
+        total += cant * precio;
+      });
+      document.getElementById("vv-total").textContent = money(total);
+    }
+
+    function vvQuitar(id) {
+      vvSel = vvSel.filter(x => x !== id);
+      if (!vvSel.length) {
+        vvVolverPaso1();
+        return;
+      }
+      vvPasoResumen();
+    }
+
+    function vvPasoResumen() {
+      if (!vvSel.length) {
+        toast("Elige al menos una carta");
+        return;
+      }
+      const lista = document.getElementById("vv-lista");
+      lista.innerHTML = vvSel.map(id => {
+        const p = data.productos.find(x => x.id === id);
+        if (!p) return "";
+        return `
+          <div class="vv-row" data-id="${p.id}">
+            ${p.foto ? `<img src="${escapeHtml(p.foto)}" alt="">` : '<div style="width:40px;height:56px;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center">🎴</div>'}
+            <div class="vv-nombre">${escapeHtml(p.nombre)}<small>disponibles: ${p.cantidad || 0}</small></div>
+            <input type="number" class="vv-cant" min="1" max="${p.cantidad || 1}" value="1" title="Cantidad">
+            <input type="number" class="vv-precio" min="0" step="0.01" value="${p.precio || ""}" placeholder="Precio" title="Precio por carta">
+            <button type="button" class="vv-quitar" title="Quitar" onclick="vvQuitar('${p.id}')">✕</button>
+          </div>`;
+      }).join("");
+      lista.querySelectorAll(".vv-cant, .vv-precio").forEach(inp => {
+        inp.addEventListener("input", vvTotal);
+      });
+      vvTotal();
+      document.getElementById("vv-paso1").classList.add("hidden");
+      document.getElementById("vv-paso2").classList.remove("hidden");
+    }
+
+    function vvVolverPaso1() {
+      document.getElementById("vv-paso2").classList.add("hidden");
+      document.getElementById("vv-paso1").classList.remove("hidden");
+      renderVVGrid();
+    }
+
+    async function confirmarVentaVarias() {
+      const filas = [];
+      document.querySelectorAll("#vv-lista .vv-row").forEach(row => {
+        const id = row.dataset.id;
+        const cant = Number(row.querySelector(".vv-cant").value);
+        const precio = Number(row.querySelector(".vv-precio").value);
+        const p = data.productos.find(x => x.id === id);
+        if (!p) return;
+        if (cant < 1 || cant > (p.cantidad || 0)) {
+          toast("Cantidad inválida para " + p.nombre);
+          throw new Error("cantidad");
+        }
+        filas.push({ p, cant, precio });
+      });
+      if (!filas.length) {
+        toast("No hay cartas en la venta");
+        return;
+      }
+      try {
+        for (const { p, cant, precio } of filas) {
+          await userCol("ventas").add({
+            productoId: p.id,
+            nombre: p.nombre,
+            foto: p.foto || "",
+            dueno: p.dueno || "Yo",
+            categoria: p.categoria || "Pokémon",
+            cantidad: cant,
+            precioUnit: precio,
+            costoUnit: p.costo || 0,
+            total: cant * precio,
+            ganancia: cant * (precio - (p.costo || 0)),
+            fecha: new Date().toISOString()
+          });
+          await userCol("productos").doc(p.id).update({
+            cantidad: (p.cantidad || 0) - cant
+          });
+        }
+        cerrarVentaVarias();
+        toast(filas.length === 1
+          ? "¡Venta registrada!"
+          : "¡Venta de " + filas.length + " cartas registrada!");
+      } catch (err) {
+        if (err.message !== "cantidad") toast("Error: " + err.message);
+      }
+    }
+
+    document.getElementById("vv-buscar").addEventListener("input", renderVVGrid);
+
     // ---- Cuentas ----
     // ---- Elegir cartas para cuenta por cobrar ----
     let cartasSel = [];
     let pickerSel = new Set();
+    let pickerCat = "todos";
+    let vvCat = "todos";
+
+    function catsPicker() {
+      const s = new Set(["Pokémon", "Deporte"]);
+      data.productos.forEach(p => {
+        const c = (p.categoria || "").trim();
+        if (c) s.add(c);
+      });
+      const orden = ["Pokémon", "Deporte"];
+      return [...s].sort((a, b) => {
+        const ia = orden.indexOf(a), ib = orden.indexOf(b);
+        if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        return a.localeCompare(b);
+      });
+    }
+
+    function pintarFiltroCat(containerId, actual, onPick) {
+      const el = document.getElementById(containerId);
+      const cats = catsPicker();
+      el.innerHTML = '<span class="filters-label">Categoría:</span>' +
+        '<button type="button" class="filter-btn ' + (actual === "todos" ? "active" : "") + '" data-cat="todos">Todas</button>' +
+        cats.map(c => `<button type="button" class="filter-btn ${actual === c ? "active" : ""}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
+      el.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => onPick(btn.dataset.cat));
+      });
+    }
 
     function renderSelThumbs() {
       const el = document.getElementById("c-sel-thumbs");
@@ -1457,6 +1715,7 @@
 
     function abrirPicker() {
       pickerSel = new Set(cartasSel);
+      pickerCat = "todos";
       document.getElementById("picker-buscar").value = "";
       renderPicker();
       document.getElementById("modal-cartas").classList.remove("hidden");
@@ -1482,8 +1741,15 @@
     }
 
     function renderPicker() {
+      pintarFiltroCat("picker-filtros-cat", pickerCat, (cat) => {
+        pickerCat = cat;
+        renderPicker();
+      });
       const q = document.getElementById("picker-buscar").value.toLowerCase().trim();
-      const lista = data.productos.filter(p => !q || (p.nombre || "").toLowerCase().includes(q));
+      const lista = data.productos.filter(p =>
+        (pickerCat === "todos" || (p.categoria || "Pokémon") === pickerCat) &&
+        (!q || (p.nombre || "").toLowerCase().includes(q))
+      );
       document.getElementById("picker-count").textContent = "(" + pickerSel.size + " elegidas)";
       const grid = document.getElementById("picker-grid");
       grid.innerHTML = lista.map(p => `
@@ -1781,6 +2047,12 @@
     });
     document.getElementById("modal-vender").addEventListener("click", (e) => {
       if (e.target.id === "modal-vender") cerrarModalVender();
+    });
+    document.getElementById("modal-cartas").addEventListener("click", (e) => {
+      if (e.target.id === "modal-cartas") cerrarPicker();
+    });
+    document.getElementById("modal-vender-varias").addEventListener("click", (e) => {
+      if (e.target.id === "modal-vender-varias") cerrarVentaVarias();
     });
 
     render();
