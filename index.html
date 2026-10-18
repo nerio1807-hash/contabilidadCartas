@@ -120,6 +120,31 @@
 
     label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.25rem; }
 
+    .photo-upload {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--bg);
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0.5rem;
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .photo-upload:hover { border-color: var(--primary); color: var(--text); }
+
+    .photo-preview {
+      max-width: 100%;
+      max-height: 140px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
     input, select {
       width: 100%;
       padding: 0.55rem;
@@ -425,8 +450,16 @@
               <input type="text" id="p-nombre" required placeholder="Ej: Charizard ex">
             </div>
             <div>
-              <label>Foto (enlace de la imagen)</label>
-              <input type="url" id="p-foto" placeholder="https://...">
+              <label>Foto desde tu celular o compu</label>
+              <label class="photo-upload" for="p-foto">
+                <span id="p-foto-label">📷 Toca para tomar o elegir foto</span>
+                <img id="p-foto-preview" class="photo-preview hidden" alt="">
+              </label>
+              <input type="file" id="p-foto" accept="image/*" capture="environment" class="hidden">
+            </div>
+            <div>
+              <label>O pega un enlace de internet (si ya tiene foto)</label>
+              <input type="url" id="p-foto-url" placeholder="https://...">
             </div>
             <div>
               <label>Cantidad</label>
@@ -539,8 +572,17 @@
           <input type="text" id="e-nombre" required>
         </div>
         <div>
-          <label>Foto (enlace)</label>
-          <input type="url" id="e-foto">
+          <label>Foto desde tu celular o compu</label>
+          <label class="photo-upload" for="e-foto">
+            <span id="e-foto-label">📷 Toca para tomar o elegir foto</span>
+            <img id="e-foto-preview" class="photo-preview hidden" alt="">
+          </label>
+          <input type="file" id="e-foto" accept="image/*" capture="environment" class="hidden">
+          <button type="button" class="btn-sm btn-danger" id="e-foto-quitar" style="margin-top:0.4rem">Quitar foto</button>
+        </div>
+        <div>
+          <label>O pega un enlace de internet</label>
+          <input type="url" id="e-foto-url" placeholder="https://...">
         </div>
         <div>
           <label>Cantidad</label>
@@ -613,6 +655,70 @@
 
     let editandoId = null;
     let vendiendoId = null;
+    let fotoPendiente = "";
+    let fotoEditPendiente = "";
+
+    function procesarFoto(file, callback) {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        toast("Ese archivo no es una imagen");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSize = 600;
+          let w = img.width, h = img.height;
+          if (w > maxSize || h > maxSize) {
+            if (w >= h) { h = Math.round(h * maxSize / w); w = maxSize; }
+            else { w = Math.round(w * maxSize / h); h = maxSize; }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById("p-foto").addEventListener("change", (e) => {
+      procesarFoto(e.target.files[0], (dataUrl) => {
+        fotoPendiente = dataUrl;
+        document.getElementById("p-foto-label").style.display = "none";
+        const prev = document.getElementById("p-foto-preview");
+        prev.src = dataUrl;
+        prev.classList.remove("hidden");
+      });
+    });
+
+    document.getElementById("p-foto-url").addEventListener("input", () => {
+      if (fotoPendiente) return;
+      const url = document.getElementById("p-foto-url").value.trim();
+      const prev = document.getElementById("p-foto-preview");
+      const label = document.getElementById("p-foto-label");
+      if (url) {
+        prev.src = url;
+        prev.classList.remove("hidden");
+        label.style.display = "none";
+      } else {
+        prev.classList.add("hidden");
+        label.style.display = "";
+      }
+    });
+
+    document.getElementById("e-foto").addEventListener("change", (e) => {
+      procesarFoto(e.target.files[0], (dataUrl) => {
+        fotoEditPendiente = dataUrl;
+        document.getElementById("e-foto-label").style.display = "none";
+        const prev = document.getElementById("e-foto-preview");
+        prev.src = dataUrl;
+        prev.classList.remove("hidden");
+      });
+    });
 
     function money(n) {
       return "$" + Number(n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -709,7 +815,7 @@
       try {
         await userCol("productos").add({
           nombre: document.getElementById("p-nombre").value.trim(),
-          foto: document.getElementById("p-foto").value.trim(),
+          foto: fotoPendiente || document.getElementById("p-foto-url").value.trim(),
           cantidad: Number(document.getElementById("p-cantidad").value) || 1,
           costo: Number(document.getElementById("p-costo").value) || 0,
           precio: Number(document.getElementById("p-precio").value) || 0,
@@ -717,6 +823,9 @@
         });
         e.target.reset();
         document.getElementById("p-cantidad").value = 1;
+        fotoPendiente = "";
+        document.getElementById("p-foto-label").style.display = "";
+        document.getElementById("p-foto-preview").classList.add("hidden");
         toast("Carta agregada");
       } catch (err) {
         toast("Error: " + err.message);
@@ -730,15 +839,57 @@
       if (!p) return;
       editandoId = id;
       document.getElementById("e-nombre").value = p.nombre || "";
-      document.getElementById("e-foto").value = p.foto || "";
       document.getElementById("e-cantidad").value = p.cantidad || 0;
       document.getElementById("e-costo").value = p.costo || 0;
       document.getElementById("e-precio").value = p.precio || 0;
+      if ((p.foto || "").startsWith("data:")) {
+        fotoEditPendiente = p.foto;
+        document.getElementById("e-foto-url").value = "";
+      } else {
+        fotoEditPendiente = "";
+        document.getElementById("e-foto-url").value = p.foto || "";
+      }
+      document.getElementById("e-foto").value = "";
+      actualizarPreviewEdit();
       document.getElementById("modal-editar").classList.remove("hidden");
     }
 
+    function actualizarPreviewEdit() {
+      const prev = document.getElementById("e-foto-preview");
+      const label = document.getElementById("e-foto-label");
+      const quitar = document.getElementById("e-foto-quitar");
+      const url = document.getElementById("e-foto-url").value.trim();
+      const mostrar = fotoEditPendiente || url;
+      if (fotoEditPendiente) {
+        prev.src = fotoEditPendiente;
+      } else if (url) {
+        prev.src = url;
+      }
+      if (mostrar) {
+        prev.classList.remove("hidden");
+        label.style.display = "none";
+        quitar.style.display = "";
+      } else {
+        prev.classList.add("hidden");
+        label.style.display = "";
+        quitar.style.display = "none";
+      }
+    }
+
+    document.getElementById("e-foto-quitar").addEventListener("click", () => {
+      fotoEditPendiente = "";
+      document.getElementById("e-foto").value = "";
+      document.getElementById("e-foto-url").value = "";
+      actualizarPreviewEdit();
+    });
+
+    document.getElementById("e-foto-url").addEventListener("input", actualizarPreviewEdit);
+
     function cerrarModalEditar() {
       editandoId = null;
+      fotoEditPendiente = "";
+      document.getElementById("e-foto").value = "";
+      document.getElementById("e-foto-url").value = "";
       document.getElementById("modal-editar").classList.add("hidden");
     }
 
@@ -748,7 +899,7 @@
       try {
         await userCol("productos").doc(editandoId).update({
           nombre: document.getElementById("e-nombre").value.trim(),
-          foto: document.getElementById("e-foto").value.trim(),
+          foto: fotoEditPendiente || document.getElementById("e-foto-url").value.trim(),
           cantidad: Number(document.getElementById("e-cantidad").value) || 0,
           costo: Number(document.getElementById("e-costo").value) || 0,
           precio: Number(document.getElementById("e-precio").value) || 0
