@@ -93,6 +93,65 @@
 
     .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .filters-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .filter-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      border-radius: 99px;
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .dueno-tag {
+      display: inline-block;
+      background: #1e3a8a;
+      color: #bfdbfe;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.5rem;
+      border-radius: 99px;
+    }
+
+    .cat-tag {
+      display: inline-block;
+      background: #713f12;
+      color: #fde68a;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.5rem;
+      border-radius: 99px;
+      margin-right: 0.3rem;
+    }
+
+    .tag-row:empty { display: none; }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+
     .tab {
       background: var(--panel);
       color: var(--text);
@@ -143,6 +202,23 @@
       max-height: 140px;
       border-radius: 6px;
       object-fit: contain;
+    }
+
+    .import-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .import-hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      flex: 1;
+      min-width: 200px;
     }
 
     input, select {
@@ -332,11 +408,71 @@
 
     .prod-actions {
       display: flex;
-      gap: 0.35rem;
+      flex-direction: column;
+      gap: 0.4rem;
       padding: 0 0.75rem 0.75rem;
+      margin-top: auto;
     }
 
-    .prod-actions button { flex: 1; }
+    .prod-actions .btn-success { width: 100%; }
+
+    .prod-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .icon-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 2.1rem;
+      height: 2.1rem;
+      min-width: 2.1rem;
+      padding: 0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover { border-color: var(--primary); }
+
+    .icon-btn.delete:hover { border-color: var(--danger); color: #f87171; }
+
+    .qty-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      flex: 1;
+      height: 2.1rem;
+      overflow: hidden;
+    }
+
+    .qty-stepper button {
+      background: transparent;
+      color: var(--text);
+      width: 1.9rem;
+      height: 100%;
+      min-height: 2.1rem;
+      padding: 0;
+      font-size: 1.1rem;
+      border-radius: 0;
+      line-height: 1;
+    }
+
+    .qty-stepper button:hover { background: #334155; opacity: 1; }
+
+    .qty-val {
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
+      flex: 1;
+    }
 
     /* Modal */
     .modal-overlay {
@@ -371,6 +507,93 @@
     }
 
     .modal-actions button { flex: 1; }
+
+    .modal-picker { width: min(640px, 100%); }
+
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .picker-card {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.4rem;
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    .picker-card:hover { transform: scale(1.03); }
+
+    .picker-card.sel {
+      border-color: var(--success);
+      background: rgba(74, 222, 128, 0.08);
+    }
+
+    .picker-card.sel::after {
+      content: "✓";
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      background: var(--success);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .picker-card img {
+      width: 100%;
+      aspect-ratio: 5 / 7;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #111;
+    }
+
+    .picker-card .p-nombre {
+      font-size: 0.65rem;
+      margin-top: 0.3rem;
+      line-height: 1.2;
+      max-height: 2.4em;
+      overflow: hidden;
+      word-break: break-word;
+    }
+
+    .sel-thumbs {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .sel-thumbs:empty { display: none; }
+
+    .sel-thumbs img {
+      width: 44px;
+      height: 62px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .cuentas-thumb {
+      width: 30px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 0.25rem;
+      border: 1px solid var(--border);
+    }
 
     @media (max-width: 600px) {
       table { font-size: 0.85rem; }
@@ -432,6 +655,18 @@
           <div class="label">Por cobrar</div>
           <div class="value red" id="stat-pendiente">$0</div>
         </div>
+        <div class="stat">
+          <div class="label">Efectivo <button type="button" class="btn-sm" style="padding:0.15rem 0.45rem;margin-left:0.25rem" onclick="editarEfectivo()">✏️</button></div>
+          <div class="value" id="stat-efectivo">$0</div>
+        </div>
+      </div>
+
+      <div class="filters" id="filtros-categoria">
+        <span class="filters-label">Categoría:</span>
+      </div>
+
+      <div class="filters" id="filtros">
+        <span class="filters-label">Dueño:</span>
       </div>
 
       <div class="tabs">
@@ -444,6 +679,11 @@
       <section id="tab-inventario">
         <div class="panel">
           <h2>Agregar carta / producto</h2>
+          <div class="import-row">
+            <button type="button" class="btn-light" id="btn-importar">📥 Importar mi portafolio de Collectr</button>
+            <input type="file" id="file-collectr" accept=".csv,text/csv" class="hidden">
+            <span class="import-hint">Exporta tu portafolio de Collectr a CSV y trae nombre, foto y cantidad. Los precios los pones tú después.</span>
+          </div>
           <form id="form-producto" class="form-grid">
             <div>
               <label>Nombre</label>
@@ -474,6 +714,19 @@
               <input type="number" id="p-precio" min="0" step="0.01" required placeholder="0.00">
             </div>
             <div>
+              <label>Categoría</label>
+              <input type="text" id="p-categoria" list="lista-categorias" value="Pokémon" placeholder="Pokémon">
+              <datalist id="lista-categorias">
+                <option value="Pokémon">
+                <option value="Deporte">
+              </datalist>
+            </div>
+            <div>
+              <label>De quién es</label>
+              <input type="text" id="p-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+              <datalist id="lista-duenos"></datalist>
+            </div>
+            <div>
               <button type="submit" class="btn-success">Agregar</button>
             </div>
           </form>
@@ -495,6 +748,7 @@
               <thead>
                 <tr>
                   <th>Carta</th>
+                  <th>De quién</th>
                   <th>Cant.</th>
                   <th>Precio unit.</th>
                   <th>Total</th>
@@ -528,7 +782,16 @@
               <input type="text" id="c-concepto" placeholder="Ej: 2 cartas">
             </div>
             <div>
+              <label>De quién es</label>
+              <input type="text" id="c-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+            </div>
+            <div>
               <button type="submit" class="btn-success">Agregar</button>
+            </div>
+            <div class="cuentas-cartas-row" style="grid-column: 1 / -1;">
+              <label style="margin-bottom:0.4rem">Cartas de la cuenta</label>
+              <div class="sel-thumbs" id="c-sel-thumbs"></div>
+              <button type="button" class="btn-light" id="btn-elegir-cartas">🎴 Elegir cartas desde las imágenes</button>
             </div>
           </form>
         </div>
@@ -541,6 +804,7 @@
                 <tr>
                   <th>Persona</th>
                   <th>Concepto</th>
+                  <th>De quién</th>
                   <th>Monto</th>
                   <th>Estado</th>
                   <th>Fecha</th>
@@ -596,6 +860,14 @@
           <label>Precio de venta</label>
           <input type="number" id="e-precio" min="0" step="0.01" required>
         </div>
+        <div>
+          <label>Categoría</label>
+          <input type="text" id="e-categoria" list="lista-categorias" placeholder="Pokémon">
+        </div>
+        <div>
+          <label>De quién es</label>
+          <input type="text" id="e-dueno" list="lista-duenos" placeholder="Yo">
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn-danger" onclick="cerrarModalEditar()">Cancelar</button>
           <button type="submit" class="btn-success">Guardar</button>
@@ -626,6 +898,20 @@
     </div>
   </div>
 
+  <!-- MODAL ELEGIR CARTAS -->
+  <div id="modal-cartas" class="modal-overlay hidden">
+    <div class="modal modal-picker">
+      <h3>Elegir cartas <span id="picker-count" style="color:var(--muted);font-weight:400;font-size:0.9rem"></span></h3>
+      <input type="text" id="picker-buscar" placeholder="🔍 Buscar por nombre..." style="margin-bottom:0.75rem">
+      <div class="picker-grid" id="picker-grid"></div>
+      <p class="empty hidden" id="picker-empty" style="padding:1rem 0">No hay cartas que coincidan.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-danger" onclick="cerrarPicker()">Cancelar</button>
+        <button type="button" class="btn-success" onclick="cerrarPicker(true)">Listo</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <!-- Firebase -->
@@ -650,13 +936,16 @@
     let productsUnsub = null;
     let accountsUnsub = null;
     let salesUnsub = null;
+    let cashUnsub = null;
 
-    let data = { productos: [], cuentas: [], ventas: [] };
+    let data = { productos: [], cuentas: [], ventas: [], efectivo: 0 };
 
     let editandoId = null;
     let vendiendoId = null;
     let fotoPendiente = "";
     let fotoEditPendiente = "";
+    let filtroDueno = "Yo";
+    let filtroCat = "todos";
 
     function procesarFoto(file, callback) {
       if (!file) return;
@@ -708,6 +997,115 @@
         prev.classList.add("hidden");
         label.style.display = "";
       }
+    });
+
+    // ---- Importar CSV de Collectr ----
+    function parseCSV(texto) {
+      const filas = [];
+      let fila = [], campo = "", dentroDeComillas = false;
+      for (let i = 0; i < texto.length; i++) {
+        const c = texto[i];
+        if (dentroDeComillas) {
+          if (c === '"') {
+            if (texto[i + 1] === '"') { campo += '"'; i++; }
+            else dentroDeComillas = false;
+          } else campo += c;
+        } else if (c === '"') dentroDeComillas = true;
+        else if (c === ",") { fila.push(campo); campo = ""; }
+        else if (c === "\n") { fila.push(campo); filas.push(fila); fila = []; campo = ""; }
+        else if (c !== "\r") campo += c;
+      }
+      if (campo.length || fila.length) { fila.push(campo); filas.push(fila); }
+      return filas;
+    }
+
+    function colIndice(headers, nombres) {
+      for (const n of nombres) {
+        const i = headers.findIndex(h => h.trim().toLowerCase() === n.toLowerCase());
+        if (i !== -1) return i;
+      }
+      return -1;
+    }
+
+    document.getElementById("btn-importar").addEventListener("click", () => {
+      document.getElementById("file-collectr").click();
+    });
+
+    document.getElementById("file-collectr").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const texto = await file.text();
+        const filas = parseCSV(texto);
+        if (filas.length < 2) throw new Error("El archivo no tiene datos");
+
+        const headers = filas[0];
+        const iNombre = colIndice(headers, ["Item Name", "Name", "Nombre", "Card Name"]);
+        const iFoto = colIndice(headers, ["Image URL", "Image", "Foto"]);
+        const iCant = colIndice(headers, ["Quantity", "Qty", "Cantidad"]);
+
+        if (iNombre === -1) throw new Error("No encontré la columna de nombre en el CSV. Exporta el CSV con la extensión Collectr Portfolio Exporter.");
+
+        // Cada producto de Collectr tiene un ID único en su foto (product_12345).
+        // Ese ID es la clave real de la carta: el mismo Pokémon con foto distinta
+        // es otra carta. Si no hay foto, usamos nombre+foto como respaldo.
+        function claveCarta(nombre, foto) {
+          const m = (foto || "").match(/product_(\d+)/);
+          if (m) return "id:" + m[1];
+          return "nm:" + (nombre || "").toLowerCase().trim() + "|" + (foto || "").trim();
+        }
+
+        const existentes = new Map(data.productos.map(p => [claveCarta(p.nombre, p.foto), p]));
+        let agregadas = 0, actualizadas = 0, omitidas = 0;
+
+        for (let i = 1; i < filas.length; i++) {
+          const fila = filas[i];
+          const nombre = (fila[iNombre] || "").trim();
+          if (!nombre || /^total/i.test(nombre)) continue;
+
+          const foto = iFoto !== -1 ? (fila[iFoto] || "").trim() : "";
+          const cantidad = iCant !== -1 ? (parseInt(fila[iCant], 10) || 1) : 1;
+          const clave = claveCarta(nombre, foto);
+
+          const existente = existentes.get(clave);
+          if (existente) {
+            if ((existente.cantidad || 0) !== cantidad) {
+              await userCol("productos").doc(existente.id).update({ cantidad });
+              actualizadas++;
+            } else {
+              omitidas++;
+            }
+            continue;
+          }
+
+          const nuevo = await userCol("productos").add({
+            nombre,
+            foto,
+            cantidad,
+            costo: 0,
+            precio: 0,
+            categoria: filtroCat !== "todos" ? filtroCat : "Pokémon",
+            dueno: filtroDueno !== "todos" ? filtroDueno : "Yo",
+            importadoDe: "collectr",
+            creado: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          existentes.set(clave, { id: nuevo.id, nombre, foto, cantidad });
+          agregadas++;
+        }
+
+        const partes = [];
+        if (agregadas) partes.push(agregadas + " nuevas");
+        if (actualizadas) partes.push(actualizadas + " actualizadas");
+        if (omitidas) partes.push(omitidas + " sin cambio");
+        if (agregadas || actualizadas) {
+          toast("Importación: " + partes.join(", ") + ". Ponles tu precio con ✏️ Editar.");
+        } else {
+          toast(omitidas ? "Ya tienes todas esas cartas con la misma cantidad" : "No se encontraron cartas nuevas");
+        }
+      } catch (err) {
+        alert("No se pudo importar: " + err.message);
+      }
+      e.target.value = "";
     });
 
     document.getElementById("e-foto").addEventListener("change", (e) => {
@@ -763,7 +1161,7 @@
         document.getElementById("app").classList.add("hidden");
         document.getElementById("login-screen").classList.remove("hidden");
         stopListeners();
-        data = { productos: [], cuentas: [], ventas: [] };
+        data = { productos: [], cuentas: [], ventas: [], efectivo: 0 };
         render();
         return;
       }
@@ -786,6 +1184,7 @@
       if (productsUnsub) { productsUnsub(); productsUnsub = null; }
       if (accountsUnsub) { accountsUnsub(); accountsUnsub = null; }
       if (salesUnsub) { salesUnsub(); salesUnsub = null; }
+      if (cashUnsub) { cashUnsub(); cashUnsub = null; }
     }
 
     function startListeners() {
@@ -805,6 +1204,26 @@
         data.ventas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
       }, (err) => toast("Error cargando ventas: " + err.message));
+
+      cashUnsub = userCol("ajustes").doc("caja").onSnapshot((doc) => {
+        data.efectivo = doc.exists ? (Number(doc.data().efectivo) || 0) : 0;
+        render();
+      }, (err) => toast("Error cargando efectivo: " + err.message));
+    }
+
+    async function editarEfectivo() {
+      const v = prompt("¿Cuánto dinero en efectivo tienes?", data.efectivo || 0);
+      if (v === null) return;
+      const valor = Math.max(0, Number(v) || 0);
+      try {
+        await userCol("ajustes").doc("caja").set({
+          efectivo: valor,
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        toast("Efectivo actualizado: " + money(valor));
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
     }
 
     // ---- Productos: agregar ----
@@ -819,6 +1238,8 @@
           cantidad: Number(document.getElementById("p-cantidad").value) || 1,
           costo: Number(document.getElementById("p-costo").value) || 0,
           precio: Number(document.getElementById("p-precio").value) || 0,
+          categoria: document.getElementById("p-categoria").value.trim() || "Pokémon",
+          dueno: document.getElementById("p-dueno").value.trim() || "Yo",
           creado: firebase.firestore.FieldValue.serverTimestamp()
         });
         e.target.reset();
@@ -842,6 +1263,8 @@
       document.getElementById("e-cantidad").value = p.cantidad || 0;
       document.getElementById("e-costo").value = p.costo || 0;
       document.getElementById("e-precio").value = p.precio || 0;
+      document.getElementById("e-categoria").value = p.categoria || "Pokémon";
+      document.getElementById("e-dueno").value = p.dueno || "Yo";
       if ((p.foto || "").startsWith("data:")) {
         fotoEditPendiente = p.foto;
         document.getElementById("e-foto-url").value = "";
@@ -902,7 +1325,9 @@
           foto: fotoEditPendiente || document.getElementById("e-foto-url").value.trim(),
           cantidad: Number(document.getElementById("e-cantidad").value) || 0,
           costo: Number(document.getElementById("e-costo").value) || 0,
-          precio: Number(document.getElementById("e-precio").value) || 0
+          precio: Number(document.getElementById("e-precio").value) || 0,
+          categoria: document.getElementById("e-categoria").value.trim() || "Pokémon",
+          dueno: document.getElementById("e-dueno").value.trim() || "Yo"
         });
         cerrarModalEditar();
         toast("Carta actualizada");
@@ -916,6 +1341,18 @@
       try {
         await userCol("productos").doc(id).delete();
         toast("Carta eliminada");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    async function cambiarCantidad(id, delta) {
+      const p = data.productos.find(x => x.id === id);
+      if (!p) return;
+      const nueva = Math.max(0, (p.cantidad || 0) + delta);
+      if (nueva === (p.cantidad || 0)) return;
+      try {
+        await userCol("productos").doc(id).update({ cantidad: nueva });
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -961,6 +1398,8 @@
           productoId: p.id,
           nombre: p.nombre,
           foto: p.foto || "",
+          dueno: p.dueno || "Yo",
+          categoria: p.categoria || "Pokémon",
           cantidad: cantVendida,
           precioUnit,
           costoUnit: p.costo || 0,
@@ -991,19 +1430,106 @@
     }
 
     // ---- Cuentas ----
+    // ---- Elegir cartas para cuenta por cobrar ----
+    let cartasSel = [];
+    let pickerSel = new Set();
+
+    function renderSelThumbs() {
+      const el = document.getElementById("c-sel-thumbs");
+      el.innerHTML = cartasSel.map(id => {
+        const p = data.productos.find(x => x.id === id);
+        if (!p) return "";
+        return p.foto
+          ? `<img src="${escapeHtml(p.foto)}" alt="">`
+          : '<div style="width:44px;height:62px;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center">🎴</div>';
+      }).join("");
+    }
+
+    function autoConceptoCartas(ids) {
+      const nombres = ids
+        .map(id => data.productos.find(p => p.id === id))
+        .filter(Boolean)
+        .map(p => p.nombre);
+      if (!nombres.length) return "";
+      if (nombres.length <= 2) return nombres.join(", ");
+      return nombres.slice(0, 2).join(", ") + " y " + (nombres.length - 2) + " más";
+    }
+
+    function abrirPicker() {
+      pickerSel = new Set(cartasSel);
+      document.getElementById("picker-buscar").value = "";
+      renderPicker();
+      document.getElementById("modal-cartas").classList.remove("hidden");
+    }
+
+    function cerrarPicker(confirmar) {
+      document.getElementById("modal-cartas").classList.add("hidden");
+      if (!confirmar) return;
+      cartasSel = [...pickerSel];
+      renderSelThumbs();
+      const concepto = document.getElementById("c-concepto");
+      if (cartasSel.length && !concepto.value.trim()) {
+        concepto.value = autoConceptoCartas(cartasSel);
+      }
+      const monto = document.getElementById("c-monto");
+      if (cartasSel.length && !monto.value) {
+        const total = cartasSel.reduce((s, id) => {
+          const p = data.productos.find(x => x.id === id);
+          return s + (p && p.precio ? Number(p.precio) : 0);
+        }, 0);
+        if (total > 0) monto.value = total;
+      }
+    }
+
+    function renderPicker() {
+      const q = document.getElementById("picker-buscar").value.toLowerCase().trim();
+      const lista = data.productos.filter(p => !q || (p.nombre || "").toLowerCase().includes(q));
+      document.getElementById("picker-count").textContent = "(" + pickerSel.size + " elegidas)";
+      const grid = document.getElementById("picker-grid");
+      grid.innerHTML = lista.map(p => `
+        <div class="picker-card ${pickerSel.has(p.id) ? "sel" : ""}" data-id="${p.id}">
+          ${p.foto
+            ? `<img src="${escapeHtml(p.foto)}" alt="">`
+            : '<div style="aspect-ratio:5/7;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🎴</div>'}
+          <div class="p-nombre">${escapeHtml(p.nombre)}</div>
+        </div>`).join("");
+      document.getElementById("picker-empty").classList.toggle("hidden", lista.length > 0);
+      grid.querySelectorAll(".picker-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const id = card.dataset.id;
+          if (pickerSel.has(id)) pickerSel.delete(id); else pickerSel.add(id);
+          card.classList.toggle("sel");
+          document.getElementById("picker-count").textContent = "(" + pickerSel.size + " elegidas)";
+        });
+      });
+    }
+
+    document.getElementById("btn-elegir-cartas").addEventListener("click", abrirPicker);
+    document.getElementById("picker-buscar").addEventListener("input", renderPicker);
+
     document.getElementById("form-cuenta").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const btn = e.target.querySelector("button");
+      const btn = e.submitter || e.target.querySelector("button[type='submit']");
       btn.disabled = true;
       try {
+        const cards = cartasSel
+          .map(id => {
+            const p = data.productos.find(x => x.id === id);
+            return p ? { id: p.id, nombre: p.nombre || "", foto: p.foto || "" } : null;
+          })
+          .filter(Boolean);
         await userCol("cuentas").add({
           nombre: document.getElementById("c-nombre").value.trim(),
           monto: Number(document.getElementById("c-monto").value),
           concepto: document.getElementById("c-concepto").value.trim(),
+          dueno: document.getElementById("c-dueno").value.trim() || "Yo",
+          productos: cards,
           pagada: false,
           fecha: new Date().toISOString()
         });
         e.target.reset();
+        cartasSel = [];
+        renderSelThumbs();
         toast("Cuenta agregada");
       } catch (err) {
         toast("Error: " + err.message);
@@ -1031,11 +1557,14 @@
       if (monto === null) return;
       const concepto = prompt("Concepto:", c.concepto);
       if (concepto === null) return;
+      const dueno = prompt("De quién es:", c.dueno || "Yo");
+      if (dueno === null) return;
       try {
         await userCol("cuentas").doc(id).update({
           nombre: nombre.trim() || c.nombre,
           monto: Number(monto) || 0,
-          concepto: concepto.trim()
+          concepto: concepto.trim(),
+          dueno: dueno.trim() || "Yo"
         });
         toast("Cuenta actualizada");
       } catch (err) {
@@ -1055,14 +1584,77 @@
 
     // ---- Render ----
     function render() {
+      // Categorías conocidas
+      const catsSet = new Set(["Pokémon", "Deporte"]);
+      [...data.productos, ...data.ventas].forEach(x => {
+        const c = (x.categoria || "").trim();
+        if (c) catsSet.add(c);
+      });
+      const categorias = [...catsSet].sort((a, b) => {
+        const orden = ["Pokémon", "Deporte"];
+        const ia = orden.indexOf(a), ib = orden.indexOf(b);
+        if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        return a.localeCompare(b);
+      });
+      if (filtroCat !== "todos" && !catsSet.has(filtroCat)) filtroCat = "todos";
+
+      // Botones de categoría
+      const filtrosCatEl = document.getElementById("filtros-categoria");
+      filtrosCatEl.innerHTML = '<span class="filters-label">Categoría:</span>' +
+        '<button class="filter-btn ' + (filtroCat === "todos" ? "active" : "") + '" data-filtro="todos">Todas</button>' +
+        categorias.map(c => `<button class="filter-btn ${filtroCat === c ? "active" : ""}" data-filtro="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
+      filtrosCatEl.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          filtroCat = btn.dataset.filtro;
+          render();
+        });
+      });
+
+      document.getElementById("lista-categorias").innerHTML =
+        categorias.map(c => `<option value="${escapeHtml(c)}">`).join("");
+
+      // Dueños conocidos
+      const duenosSet = new Set(["Yo"]);
+      [...data.productos, ...data.ventas, ...data.cuentas].forEach(x => {
+        const d = (x.dueno || "Yo").trim();
+        if (d) duenosSet.add(d);
+      });
+      const duenos = [...duenosSet].sort((a, b) => a === "Yo" ? -1 : b === "Yo" ? 1 : a.localeCompare(b));
+
+      if (filtroDueno !== "todos" && !duenosSet.has(filtroDueno)) filtroDueno = "todos";
+
+      // Botones de filtro
+      const filtrosEl = document.getElementById("filtros");
+      filtrosEl.innerHTML = '<span class="filters-label">Dueño:</span>' +
+        '<button class="filter-btn ' + (filtroDueno === "todos" ? "active" : "") + '" data-filtro="todos">Todos</button>' +
+        duenos.map(d => `<button class="filter-btn ${filtroDueno === d ? "active" : ""}" data-filtro="${escapeHtml(d)}">${escapeHtml(d)}</button>`).join("");
+      filtrosEl.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          filtroDueno = btn.dataset.filtro;
+          render();
+        });
+      });
+
+      // Datalist de dueños para los formularios
+      document.getElementById("lista-duenos").innerHTML =
+        duenos.map(d => `<option value="${escapeHtml(d)}">`).join("");
+
+      // Datos filtrados (categoría + dueño)
+      const pertenece = (x) =>
+        (filtroCat === "todos" || (x.categoria || "Pokémon") === filtroCat) &&
+        (filtroDueno === "todos" || (x.dueno || "Yo") === filtroDueno);
+      const productos = data.productos.filter(pertenece);
+      const ventas = data.ventas.filter(pertenece);
+      const cuentas = data.cuentas.filter(c => filtroDueno === "todos" || (c.dueno || "Yo") === filtroDueno);
+
       // Productos como tarjetas
       const grid = document.getElementById("grid-productos");
-      grid.innerHTML = data.productos.map(p => {
+      grid.innerHTML = productos.map(p => {
         const stockBadge = !p.cantidad
           ? '<span class="badge badge-red">Agotado</span>'
           : p.cantidad <= 2
-            ? '<span class="badge badge-yellow">x' + p.cantidad + '</span>'
-            : '<span class="badge badge-green">x' + p.cantidad + '</span>';
+            ? '<span class="badge badge-yellow">¡Pocas!</span>'
+            : '';
 
         const gananciaUnit = (p.precio || 0) - (p.costo || 0);
         const profitHtml = gananciaUnit > 0
@@ -1073,14 +1665,23 @@
           ? '<img src="' + escapeHtml(p.foto) + '" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><div class="prod-img-placeholder" style="display:none">🃏</div>'
           : '<div class="prod-img-placeholder">🃏</div>';
 
+        const duenoTag = (filtroDueno === "todos" && p.dueno && p.dueno !== "Yo")
+          ? `<span class="dueno-tag">${escapeHtml(p.dueno)}</span>`
+          : '';
+
+        const catTag = (filtroCat === "todos" && p.categoria)
+          ? `<span class="cat-tag">${escapeHtml(p.categoria)}</span>`
+          : '';
+
         return `
           <div class="prod-card">
             <div class="prod-img-wrap">
               ${img}
-              <div class="prod-stock">${stockBadge}</div>
+              ${stockBadge ? '<div class="prod-stock">' + stockBadge + '</div>' : ''}
             </div>
             <div class="prod-body">
               <div class="prod-name">${escapeHtml(p.nombre)}</div>
+              <div class="tag-row">${catTag}${duenoTag}</div>
               <div class="prod-prices">
                 <span>Costo: <strong>${money(p.costo)}</strong></span>
                 <span>Venta: <strong>${money(p.precio)}</strong></span>
@@ -1088,22 +1689,30 @@
               ${profitHtml}
             </div>
             <div class="prod-actions">
-              <button class="btn-sm" onclick="abrirModalEditar('${p.id}')">✏️ Editar</button>
               <button class="btn-success btn-sm" onclick="abrirModalVender('${p.id}')" ${!p.cantidad ? "disabled" : ""}>💰 Vender</button>
-              <button class="btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
+              <div class="prod-footer">
+                <button class="icon-btn" title="Editar" onclick="abrirModalEditar('${p.id}')">✏️</button>
+                <div class="qty-stepper">
+                  <button onclick="cambiarCantidad('${p.id}', -1)" title="Quitar uno">−</button>
+                  <span class="qty-val">${p.cantidad || 0}</span>
+                  <button onclick="cambiarCantidad('${p.id}', 1)" title="Agregar uno">+</button>
+                </div>
+                <button class="icon-btn delete" title="Eliminar" onclick="eliminarProducto('${p.id}')">🗑️</button>
+              </div>
             </div>
           </div>`;
       }).join("");
 
-      document.getElementById("empty-productos").classList.toggle("hidden", data.productos.length > 0);
-      document.getElementById("cont-productos").textContent = data.productos.length ? "(" + data.productos.length + ")" : "";
+      document.getElementById("empty-productos").classList.toggle("hidden", productos.length > 0);
+      document.getElementById("cont-productos").textContent = productos.length ? "(" + productos.length + ")" : "";
 
       // Ventas
       const tbodyV = document.getElementById("tabla-ventas");
-      const ventasOrdenadas = [...data.ventas].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+      const ventasOrdenadas = [...ventas].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
       tbodyV.innerHTML = ventasOrdenadas.map(v => `
         <tr>
           <td>${escapeHtml(v.nombre)}</td>
+          <td>${escapeHtml(v.dueno || "Yo")}</td>
           <td>${v.cantidad}</td>
           <td>${money(v.precioUnit)}</td>
           <td><strong>${money(v.total)}</strong></td>
@@ -1112,14 +1721,20 @@
           <td><button class="btn-danger btn-sm" onclick="eliminarVenta('${v.id}')">🗑️</button></td>
         </tr>`).join("");
 
-      document.getElementById("empty-ventas").classList.toggle("hidden", data.ventas.length > 0);
+      document.getElementById("empty-ventas").classList.toggle("hidden", ventas.length > 0);
 
       // Cuentas
       const tbodyC = document.getElementById("tabla-cuentas");
-      tbodyC.innerHTML = data.cuentas.map(c => `
+      const thumbsCuenta = (c) => (c.productos || [])
+        .slice(0, 8)
+        .map(x => x.foto ? `<img class="cuentas-thumb" src="${escapeHtml(x.foto)}" alt="" title="${escapeHtml(x.nombre)}">` : "")
+        .join("");
+
+      tbodyC.innerHTML = cuentas.map(c => `
         <tr>
           <td>${escapeHtml(c.nombre)}</td>
-          <td>${escapeHtml(c.concepto || "—")}</td>
+          <td>${thumbsCuenta(c)}${escapeHtml(c.concepto || (c.productos && c.productos.length ? c.productos.length + " cartas" : "—"))}</td>
+          <td>${escapeHtml(c.dueno || "Yo")}</td>
           <td>${money(c.monto)}</td>
           <td>${c.pagada
             ? '<span class="badge badge-green">Pagada</span>'
@@ -1132,20 +1747,21 @@
           </td>
         </tr>`).join("");
 
-      document.getElementById("empty-cuentas").classList.toggle("hidden", data.cuentas.length > 0);
+      document.getElementById("empty-cuentas").classList.toggle("hidden", cuentas.length > 0);
 
-      // Stats
-      const valorInventario = data.productos.reduce((s, p) => s + (p.cantidad || 0) * (p.precio || 0), 0);
-      const invertido = data.productos.reduce((s, p) => s + (p.cantidad || 0) * (p.costo || 0), 0);
-      const vendido = data.ventas.reduce((s, v) => s + (v.total || 0), 0);
-      const ganancia = data.ventas.reduce((s, v) => s + (v.ganancia || 0), 0);
-      const pendiente = data.cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
+      // Stats (según filtro)
+      const valorInventario = productos.reduce((s, p) => s + (p.cantidad || 0) * (p.precio || 0), 0);
+      const invertido = productos.reduce((s, p) => s + (p.cantidad || 0) * (p.costo || 0), 0);
+      const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0);
+      const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0);
+      const pendiente = cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
 
       document.getElementById("stat-inventario").textContent = money(valorInventario);
       document.getElementById("stat-invertido").textContent = money(invertido);
       document.getElementById("stat-vendido").textContent = money(vendido);
       document.getElementById("stat-ganancia").textContent = money(ganancia);
       document.getElementById("stat-pendiente").textContent = money(pendiente);
+      document.getElementById("stat-efectivo").textContent = money(data.efectivo || 0);
     }
 
     // ---- Tabs ----
