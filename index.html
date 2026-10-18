@@ -10,11 +10,13 @@
       --danger: #dc2626;
       --success: #059669;
       --warning: #d97706;
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --radius: 10px;
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --card: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #475569;
+      --radius: 12px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,10 +28,10 @@
       line-height: 1.5;
     }
 
-    .container { width: min(1100px, 95%); margin-inline: auto; padding: 1.5rem 0; }
+    .container { width: min(1200px, 95%); margin-inline: auto; padding: 1.5rem 0; }
 
     header {
-      background: var(--primary);
+      background: linear-gradient(135deg, #1e3a8a, #7c3aed);
       color: #fff;
       padding: 1.25rem 0;
     }
@@ -49,8 +51,6 @@
 
     .user-info { font-size: 0.85rem; opacity: 0.9; }
 
-    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
     button {
       border: none;
       border-radius: var(--radius);
@@ -69,42 +69,43 @@
     .btn-light { background: #fff; color: var(--primary); }
     .btn-success { background: var(--success); }
     .btn-danger { background: var(--danger); }
-    .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; }
+    .btn-warning { background: var(--warning); }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
 
     .stat {
-      background: var(--card);
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1rem 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    .stat .label { color: var(--muted); font-size: 0.85rem; }
-    .stat .value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; }
-    .stat .value.red { color: var(--danger); }
-    .stat .value.green { color: var(--success); }
+    .stat .label { color: var(--muted); font-size: 0.8rem; }
+    .stat .value { font-size: 1.4rem; font-weight: 700; margin-top: 0.25rem; }
+    .stat .value.red { color: #f87171; }
+    .stat .value.green { color: #4ade80; }
 
     .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
     .tab {
-      background: var(--card);
+      background: var(--panel);
       color: var(--text);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
     }
 
-    .tab.active { background: var(--primary); color: #fff; }
+    .tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
     .panel {
-      background: var(--card);
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       margin-bottom: 1.5rem;
     }
 
@@ -122,35 +123,36 @@
     input, select {
       width: 100%;
       padding: 0.55rem;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font: inherit;
-      background: #fff;
+      background: var(--bg);
+      color: var(--text);
     }
 
     input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
 
     table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 
-    th, td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th, td { padding: 0.65rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border); }
 
-    th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+    th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
 
     .badge {
       display: inline-block;
       padding: 0.15rem 0.5rem;
       border-radius: 99px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
     }
 
-    .badge-red { background: #fee2e2; color: var(--danger); }
-    .badge-green { background: #d1fae5; color: var(--success); }
-    .badge-yellow { background: #fef3c7; color: var(--warning); }
+    .badge-red { background: #7f1d1d; color: #fca5a5; }
+    .badge-green { background: #14532d; color: #86efac; }
+    .badge-yellow { background: #78350f; color: #fcd34d; }
 
     .row-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
 
-    .empty { text-align: center; color: var(--muted); padding: 2rem 0; }
+    .empty { text-align: center; color: var(--muted); padding: 2.5rem 1rem; }
 
     .hidden { display: none !important; }
 
@@ -159,20 +161,20 @@
       bottom: 1.5rem;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--text);
-      color: #fff;
+      background: #fff;
+      color: #0f172a;
       padding: 0.75rem 1.5rem;
       border-radius: var(--radius);
       font-weight: 600;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s;
-      z-index: 200;
+      z-index: 300;
     }
 
     .toast.show { opacity: 1; }
 
-    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 1.5rem 0 2rem; }
+    footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 1.5rem 0 2rem; }
 
     /* Login */
     .login-wrap {
@@ -181,25 +183,27 @@
       align-items: center;
       justify-content: center;
       padding: 1rem;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
     }
 
     .login-card {
-      background: var(--card);
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
       padding: 2.5rem;
       max-width: 420px;
       width: 100%;
       text-align: center;
     }
 
-    .login-card h1 { margin-bottom: 0.75rem; color: var(--primary); }
+    .login-card h1 { margin-bottom: 0.75rem; color: #93c5fd; }
     .login-card p { color: var(--muted); margin-bottom: 1.5rem; }
 
     .btn-google {
       background: #fff;
       color: var(--text);
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--border);
       width: 100%;
       padding: 0.75rem;
       display: flex;
@@ -209,25 +213,145 @@
       font-size: 1rem;
     }
 
-    .btn-google:hover { background: #f9fafb; }
+    .btn-google:hover { background: #f1f5f9; }
 
     .login-note { margin-top: 1.25rem; font-size: 0.8rem; color: var(--muted); }
 
     .error-msg {
-      background: #fee2e2;
-      color: var(--danger);
+      background: #7f1d1d;
+      color: #fca5a5;
       padding: 0.75rem;
       border-radius: 8px;
       margin-bottom: 1rem;
       font-size: 0.9rem;
     }
 
-    .sync-status { font-size: 0.8rem; opacity: 0.85; }
+    .sync-status { font-size: 0.8rem; opacity: 0.9; }
+
+    /* Tarjetas de producto estilo Collectr */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 1rem;
+    }
+
+    .prod-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .prod-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    }
+
+    .prod-img-wrap {
+      position: relative;
+      aspect-ratio: 2.5 / 3.5;
+      background: linear-gradient(145deg, #1e293b, #334155);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prod-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .prod-img-placeholder {
+      font-size: 3rem;
+      opacity: 0.3;
+    }
+
+    .prod-stock {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .prod-body {
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .prod-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.4em;
+    }
+
+    .prod-prices { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
+
+    .prod-prices strong { color: var(--text); font-size: 0.95rem; }
+
+    .prod-profit {
+      font-size: 0.75rem;
+      color: #4ade80;
+      font-weight: 600;
+    }
+
+    .prod-actions {
+      display: flex;
+      gap: 0.35rem;
+      padding: 0 0.75rem 0.75rem;
+    }
+
+    .prod-actions button { flex: 1; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 250;
+    }
+
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: min(420px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h3 { margin-bottom: 1rem; }
+
+    .modal .form-grid { grid-template-columns: 1fr; }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .modal-actions button { flex: 1; }
 
     @media (max-width: 600px) {
       table { font-size: 0.85rem; }
       th, td { padding: 0.5rem 0.3rem; }
       .login-card { padding: 1.75rem; }
+      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     }
   </style>
 </head>
@@ -236,7 +360,7 @@
   <!-- LOGIN -->
   <div id="login-screen" class="login-wrap">
     <div class="login-card">
-      <h1>💰 Cuentas e Inventario</h1>
+      <h1>🃏 Cuentas e Inventario</h1>
       <p>Entra con tu cuenta de Google para que tus datos se guarden en la nube y nunca se pierdan.</p>
       <div id="login-error" class="error-msg hidden"></div>
       <button id="btn-login" class="btn-google">
@@ -251,13 +375,11 @@
   <div id="app" class="hidden">
     <header>
       <div class="container">
-        <h1>💰 Cuentas e Inventario</h1>
+        <h1>🃏 Cuentas e Inventario</h1>
         <div class="header-right">
           <span class="user-info" id="user-info"></span>
-          <span class="sync-status" id="sync-status">☁️ En la nube</span>
-          <div class="actions">
-            <button class="btn-light btn-sm" id="btn-logout">Salir</button>
-          </div>
+          <span class="sync-status">☁️ En la nube</span>
+          <button class="btn-light btn-sm" id="btn-logout">Salir</button>
         </div>
       </div>
     </header>
@@ -266,48 +388,57 @@
 
       <div class="stats">
         <div class="stat">
-          <div class="label">Productos en inventario</div>
-          <div class="value" id="stat-productos">0</div>
-        </div>
-        <div class="stat">
-          <div class="label">Valor del inventario</div>
+          <div class="label">Inventario (precio venta)</div>
           <div class="value green" id="stat-inventario">$0</div>
         </div>
         <div class="stat">
-          <div class="label">Por cobrar (pendiente)</div>
-          <div class="value red" id="stat-pendiente">$0</div>
+          <div class="label">Invertido en stock</div>
+          <div class="value" id="stat-invertido">$0</div>
         </div>
         <div class="stat">
-          <div class="label">Cobrado</div>
-          <div class="value green" id="stat-cobrado">$0</div>
+          <div class="label">Vendido (total)</div>
+          <div class="value" id="stat-vendido">$0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Ganancia total</div>
+          <div class="value green" id="stat-ganancia">$0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Por cobrar</div>
+          <div class="value red" id="stat-pendiente">$0</div>
         </div>
       </div>
 
       <div class="tabs">
-        <button class="tab active" data-tab="inventario">📦 Inventario</button>
+        <button class="tab active" data-tab="inventario">🃏 Mi colección</button>
+        <button class="tab" data-tab="ventas">💰 Ventas</button>
         <button class="tab" data-tab="cuentas">👥 Cuentas por cobrar</button>
       </div>
 
       <!-- INVENTARIO -->
       <section id="tab-inventario">
         <div class="panel">
-          <h2>Agregar producto</h2>
+          <h2>Agregar carta / producto</h2>
           <form id="form-producto" class="form-grid">
             <div>
               <label>Nombre</label>
-              <input type="text" id="p-nombre" required placeholder="Ej: Camiseta">
+              <input type="text" id="p-nombre" required placeholder="Ej: Charizard ex">
+            </div>
+            <div>
+              <label>Foto (enlace de la imagen)</label>
+              <input type="url" id="p-foto" placeholder="https://...">
             </div>
             <div>
               <label>Cantidad</label>
-              <input type="number" id="p-cantidad" min="0" required placeholder="0">
+              <input type="number" id="p-cantidad" min="1" required value="1">
+            </div>
+            <div>
+              <label>Lo que te costó</label>
+              <input type="number" id="p-costo" min="0" step="0.01" required placeholder="0.00">
             </div>
             <div>
               <label>Precio de venta</label>
               <input type="number" id="p-precio" min="0" step="0.01" required placeholder="0.00">
-            </div>
-            <div>
-              <label>Costo (opcional)</label>
-              <input type="number" id="p-costo" min="0" step="0.01" placeholder="0.00">
             </div>
             <div>
               <button type="submit" class="btn-success">Agregar</button>
@@ -316,22 +447,33 @@
         </div>
 
         <div class="panel">
-          <h2>Mis productos</h2>
+          <h2>Mis cartas <span style="color:var(--muted);font-weight:400;font-size:0.9rem" id="cont-productos"></span></h2>
+          <div class="cards-grid" id="grid-productos"></div>
+          <p class="empty hidden" id="empty-productos">Aún no hay cartas. ¡Agrega la primera arriba!</p>
+        </div>
+      </section>
+
+      <!-- VENTAS -->
+      <section id="tab-ventas" class="hidden">
+        <div class="panel">
+          <h2>Historial de ventas</h2>
           <div style="overflow-x:auto">
             <table>
               <thead>
                 <tr>
-                  <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Precio</th>
-                  <th>Valor total</th>
-                  <th>Acciones</th>
+                  <th>Carta</th>
+                  <th>Cant.</th>
+                  <th>Precio unit.</th>
+                  <th>Total</th>
+                  <th>Ganancia</th>
+                  <th>Fecha</th>
+                  <th></th>
                 </tr>
               </thead>
-              <tbody id="tabla-productos"></tbody>
+              <tbody id="tabla-ventas"></tbody>
             </table>
           </div>
-          <p class="empty hidden" id="empty-productos">Aún no hay productos.</p>
+          <p class="empty hidden" id="empty-ventas">Aún no has registrado ventas.</p>
         </div>
       </section>
 
@@ -350,7 +492,7 @@
             </div>
             <div>
               <label>Concepto (opcional)</label>
-              <input type="text" id="c-concepto" placeholder="Ej: 2 camisetas">
+              <input type="text" id="c-concepto" placeholder="Ej: 2 cartas">
             </div>
             <div>
               <button type="submit" class="btn-success">Agregar</button>
@@ -387,6 +529,61 @@
     </div>
   </div>
 
+  <!-- MODAL EDITAR PRODUCTO -->
+  <div id="modal-editar" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Editar carta</h3>
+      <form id="form-editar" class="form-grid">
+        <div>
+          <label>Nombre</label>
+          <input type="text" id="e-nombre" required>
+        </div>
+        <div>
+          <label>Foto (enlace)</label>
+          <input type="url" id="e-foto">
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input type="number" id="e-cantidad" min="0" required>
+        </div>
+        <div>
+          <label>Lo que te costó</label>
+          <input type="number" id="e-costo" min="0" step="0.01" required>
+        </div>
+        <div>
+          <label>Precio de venta</label>
+          <input type="number" id="e-precio" min="0" step="0.01" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" onclick="cerrarModalEditar()">Cancelar</button>
+          <button type="submit" class="btn-success">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL VENDER -->
+  <div id="modal-vender" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Registrar venta</h3>
+      <p style="color:var(--muted);margin-bottom:1rem" id="v-nombre-carta"></p>
+      <form id="form-vender" class="form-grid">
+        <div>
+          <label>¿Cuántas vendes? <span id="v-stock-disponible" style="color:var(--muted)"></span></label>
+          <input type="number" id="v-cantidad" min="1" required value="1">
+        </div>
+        <div>
+          <label>Precio por carta</label>
+          <input type="number" id="v-precio" min="0" step="0.01" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-danger" onclick="cerrarModalVender()">Cancelar</button>
+          <button type="submit" class="btn-success">Registrar venta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <!-- Firebase -->
@@ -395,18 +592,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // ============================================================
-    // 1) PEGA AQUÍ LA CONFIGURACIÓN DE FIREBASE (la te la doy yo
-    //    cuando la tengas en la consola de Google). Ejemplo:
-    //    const firebaseConfig = {
-    //      apiKey: "AIza...",
-    //      authDomain: "mis-cuentas.firebaseapp.com",
-    //      projectId: "mis-cuentas",
-    //      storageBucket: "mis-cuentas.appspot.com",
-    //      messagingSenderId: "123456789",
-    //      appId: "1:123..."
-    //    };
-    // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyCzlqvPTix2C1Nu1g4XsJsNhAWl7iIQZ1U",
       authDomain: "contabilidad-cartas.firebaseapp.com",
@@ -418,14 +603,16 @@
 
     firebase.initializeApp(firebaseConfig);
 
-    const CONFIG_PENDIENTE = false;
-
     let db = null;
     let user = null;
     let productsUnsub = null;
     let accountsUnsub = null;
+    let salesUnsub = null;
 
-    let data = { productos: [], cuentas: [] };
+    let data = { productos: [], cuentas: [], ventas: [] };
+
+    let editandoId = null;
+    let vendiendoId = null;
 
     function money(n) {
       return "$" + Number(n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -436,10 +623,6 @@
       el.textContent = msg;
       el.classList.add("show");
       setTimeout(() => el.classList.remove("show"), 2000);
-    }
-
-    function uid() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     }
 
     function escapeHtml(str) {
@@ -456,10 +639,6 @@
 
     // ---- Auth ----
     document.getElementById("btn-login").addEventListener("click", async () => {
-      if (CONFIG_PENDIENTE) {
-        showLoginError("Aún no se ha configurado Firebase. Sigue los pasos de instalación.");
-        return;
-      }
       try {
         const provider = new firebase.auth.GoogleAuthProvider();
         await firebase.auth().signInWithPopup(provider);
@@ -478,7 +657,7 @@
         document.getElementById("app").classList.add("hidden");
         document.getElementById("login-screen").classList.remove("hidden");
         stopListeners();
-        data = { productos: [], cuentas: [] };
+        data = { productos: [], cuentas: [], ventas: [] };
         render();
         return;
       }
@@ -500,6 +679,7 @@
     function stopListeners() {
       if (productsUnsub) { productsUnsub(); productsUnsub = null; }
       if (accountsUnsub) { accountsUnsub(); accountsUnsub = null; }
+      if (salesUnsub) { salesUnsub(); salesUnsub = null; }
     }
 
     function startListeners() {
@@ -514,9 +694,14 @@
         data.cuentas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
       }, (err) => toast("Error cargando cuentas: " + err.message));
+
+      salesUnsub = userCol("ventas").onSnapshot((snap) => {
+        data.ventas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, (err) => toast("Error cargando ventas: " + err.message));
     }
 
-    // ---- Productos ----
+    // ---- Productos: agregar ----
     document.getElementById("form-producto").addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = e.target.querySelector("button");
@@ -524,45 +709,131 @@
       try {
         await userCol("productos").add({
           nombre: document.getElementById("p-nombre").value.trim(),
-          cantidad: Number(document.getElementById("p-cantidad").value),
-          precio: Number(document.getElementById("p-precio").value),
+          foto: document.getElementById("p-foto").value.trim(),
+          cantidad: Number(document.getElementById("p-cantidad").value) || 1,
           costo: Number(document.getElementById("p-costo").value) || 0,
+          precio: Number(document.getElementById("p-precio").value) || 0,
           creado: firebase.firestore.FieldValue.serverTimestamp()
         });
         e.target.reset();
-        toast("Producto agregado");
+        document.getElementById("p-cantidad").value = 1;
+        toast("Carta agregada");
       } catch (err) {
         toast("Error: " + err.message);
       }
       btn.disabled = false;
     });
 
-    async function editarProducto(id) {
+    // ---- Modal editar ----
+    function abrirModalEditar(id) {
       const p = data.productos.find(x => x.id === id);
       if (!p) return;
-      const nombre = prompt("Nombre:", p.nombre);
-      if (nombre === null) return;
-      const cantidad = prompt("Cantidad:", p.cantidad);
-      if (cantidad === null) return;
-      const precio = prompt("Precio de venta:", p.precio);
-      if (precio === null) return;
+      editandoId = id;
+      document.getElementById("e-nombre").value = p.nombre || "";
+      document.getElementById("e-foto").value = p.foto || "";
+      document.getElementById("e-cantidad").value = p.cantidad || 0;
+      document.getElementById("e-costo").value = p.costo || 0;
+      document.getElementById("e-precio").value = p.precio || 0;
+      document.getElementById("modal-editar").classList.remove("hidden");
+    }
+
+    function cerrarModalEditar() {
+      editandoId = null;
+      document.getElementById("modal-editar").classList.add("hidden");
+    }
+
+    document.getElementById("form-editar").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!editandoId) return;
       try {
-        await userCol("productos").doc(id).update({
-          nombre: nombre.trim() || p.nombre,
-          cantidad: Number(cantidad) || 0,
-          precio: Number(precio) || 0
+        await userCol("productos").doc(editandoId).update({
+          nombre: document.getElementById("e-nombre").value.trim(),
+          foto: document.getElementById("e-foto").value.trim(),
+          cantidad: Number(document.getElementById("e-cantidad").value) || 0,
+          costo: Number(document.getElementById("e-costo").value) || 0,
+          precio: Number(document.getElementById("e-precio").value) || 0
         });
-        toast("Producto actualizado");
+        cerrarModalEditar();
+        toast("Carta actualizada");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    });
+
+    async function eliminarProducto(id) {
+      if (!confirm("¿Eliminar esta carta del inventario?")) return;
+      try {
+        await userCol("productos").doc(id).delete();
+        toast("Carta eliminada");
       } catch (err) {
         toast("Error: " + err.message);
       }
     }
 
-    async function eliminarProducto(id) {
-      if (!confirm("¿Eliminar este producto?")) return;
+    // ---- Modal vender ----
+    function abrirModalVender(id) {
+      const p = data.productos.find(x => x.id === id);
+      if (!p) return;
+      if (!p.cantidad) {
+        toast("No hay existencias de esta carta");
+        return;
+      }
+      vendiendoId = id;
+      document.getElementById("v-nombre-carta").textContent = p.nombre;
+      document.getElementById("v-stock-disponible").textContent = "(disponibles: " + p.cantidad + ")";
+      document.getElementById("v-cantidad").value = 1;
+      document.getElementById("v-cantidad").max = p.cantidad;
+      document.getElementById("v-precio").value = p.precio || "";
+      document.getElementById("modal-vender").classList.remove("hidden");
+    }
+
+    function cerrarModalVender() {
+      vendiendoId = null;
+      document.getElementById("modal-vender").classList.add("hidden");
+    }
+
+    document.getElementById("form-vender").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const p = data.productos.find(x => x.id === vendiendoId);
+      if (!p) return;
+
+      const cantVendida = Number(document.getElementById("v-cantidad").value);
+      const precioUnit = Number(document.getElementById("v-precio").value);
+
+      if (cantVendida < 1 || cantVendida > p.cantidad) {
+        toast("Cantidad inválida");
+        return;
+      }
+
       try {
-        await userCol("productos").doc(id).delete();
-        toast("Producto eliminado");
+        await userCol("ventas").add({
+          productoId: p.id,
+          nombre: p.nombre,
+          foto: p.foto || "",
+          cantidad: cantVendida,
+          precioUnit,
+          costoUnit: p.costo || 0,
+          total: cantVendida * precioUnit,
+          ganancia: cantVendida * (precioUnit - (p.costo || 0)),
+          fecha: new Date().toISOString()
+        });
+
+        await userCol("productos").doc(p.id).update({
+          cantidad: p.cantidad - cantVendida
+        });
+
+        cerrarModalVender();
+        toast("¡Venta registrada!");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    });
+
+    async function eliminarVenta(id) {
+      if (!confirm("¿Eliminar este registro de venta? (No devuelve la carta al inventario)")) return;
+      try {
+        await userCol("ventas").doc(id).delete();
+        toast("Venta eliminada");
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -633,30 +904,67 @@
 
     // ---- Render ----
     function render() {
-      const tbodyP = document.getElementById("tabla-productos");
-      const tbodyC = document.getElementById("tabla-cuentas");
-
-      tbodyP.innerHTML = data.productos.map(p => {
-        const stockBadge = p.cantidad === 0
+      // Productos como tarjetas
+      const grid = document.getElementById("grid-productos");
+      grid.innerHTML = data.productos.map(p => {
+        const stockBadge = !p.cantidad
           ? '<span class="badge badge-red">Agotado</span>'
-          : p.cantidad <= 3
-            ? '<span class="badge badge-yellow">Poco stock</span>'
-            : '<span class="badge badge-green">En stock</span>';
+          : p.cantidad <= 2
+            ? '<span class="badge badge-yellow">x' + p.cantidad + '</span>'
+            : '<span class="badge badge-green">x' + p.cantidad + '</span>';
+
+        const gananciaUnit = (p.precio || 0) - (p.costo || 0);
+        const profitHtml = gananciaUnit > 0
+          ? '<div class="prod-profit">+' + money(gananciaUnit) + ' c/u</div>'
+          : '';
+
+        const img = p.foto
+          ? '<img src="' + escapeHtml(p.foto) + '" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><div class="prod-img-placeholder" style="display:none">🃏</div>'
+          : '<div class="prod-img-placeholder">🃏</div>';
+
         return `
-          <tr>
-            <td>${escapeHtml(p.nombre)}<br>${stockBadge}</td>
-            <td>${p.cantidad}</td>
-            <td>${money(p.precio)}</td>
-            <td>${money(p.cantidad * p.precio)}</td>
-            <td class="row-actions">
-              <button class="btn-sm" onclick="editarProducto('${p.id}')">Editar</button>
-              <button class="btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">Eliminar</button>
-            </td>
-          </tr>`;
+          <div class="prod-card">
+            <div class="prod-img-wrap">
+              ${img}
+              <div class="prod-stock">${stockBadge}</div>
+            </div>
+            <div class="prod-body">
+              <div class="prod-name">${escapeHtml(p.nombre)}</div>
+              <div class="prod-prices">
+                <span>Costo: <strong>${money(p.costo)}</strong></span>
+                <span>Venta: <strong>${money(p.precio)}</strong></span>
+              </div>
+              ${profitHtml}
+            </div>
+            <div class="prod-actions">
+              <button class="btn-sm" onclick="abrirModalEditar('${p.id}')">✏️ Editar</button>
+              <button class="btn-success btn-sm" onclick="abrirModalVender('${p.id}')" ${!p.cantidad ? "disabled" : ""}>💰 Vender</button>
+              <button class="btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">🗑️</button>
+            </div>
+          </div>`;
       }).join("");
 
       document.getElementById("empty-productos").classList.toggle("hidden", data.productos.length > 0);
+      document.getElementById("cont-productos").textContent = data.productos.length ? "(" + data.productos.length + ")" : "";
 
+      // Ventas
+      const tbodyV = document.getElementById("tabla-ventas");
+      const ventasOrdenadas = [...data.ventas].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+      tbodyV.innerHTML = ventasOrdenadas.map(v => `
+        <tr>
+          <td>${escapeHtml(v.nombre)}</td>
+          <td>${v.cantidad}</td>
+          <td>${money(v.precioUnit)}</td>
+          <td><strong>${money(v.total)}</strong></td>
+          <td style="color:${v.ganancia >= 0 ? "#4ade80" : "#f87171"}">${money(v.ganancia)}</td>
+          <td>${v.fecha ? new Date(v.fecha).toLocaleDateString("es-MX") : "—"}</td>
+          <td><button class="btn-danger btn-sm" onclick="eliminarVenta('${v.id}')">🗑️</button></td>
+        </tr>`).join("");
+
+      document.getElementById("empty-ventas").classList.toggle("hidden", data.ventas.length > 0);
+
+      // Cuentas
+      const tbodyC = document.getElementById("tabla-cuentas");
       tbodyC.innerHTML = data.cuentas.map(c => `
         <tr>
           <td>${escapeHtml(c.nombre)}</td>
@@ -675,15 +983,18 @@
 
       document.getElementById("empty-cuentas").classList.toggle("hidden", data.cuentas.length > 0);
 
-      const totalProductos = data.productos.length;
+      // Stats
       const valorInventario = data.productos.reduce((s, p) => s + (p.cantidad || 0) * (p.precio || 0), 0);
+      const invertido = data.productos.reduce((s, p) => s + (p.cantidad || 0) * (p.costo || 0), 0);
+      const vendido = data.ventas.reduce((s, v) => s + (v.total || 0), 0);
+      const ganancia = data.ventas.reduce((s, v) => s + (v.ganancia || 0), 0);
       const pendiente = data.cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
-      const cobrado = data.cuentas.filter(c => c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
 
-      document.getElementById("stat-productos").textContent = totalProductos;
       document.getElementById("stat-inventario").textContent = money(valorInventario);
+      document.getElementById("stat-invertido").textContent = money(invertido);
+      document.getElementById("stat-vendido").textContent = money(vendido);
+      document.getElementById("stat-ganancia").textContent = money(ganancia);
       document.getElementById("stat-pendiente").textContent = money(pendiente);
-      document.getElementById("stat-cobrado").textContent = money(cobrado);
     }
 
     // ---- Tabs ----
@@ -691,9 +1002,18 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        document.getElementById("tab-inventario").classList.toggle("hidden", btn.dataset.tab !== "inventario");
-        document.getElementById("tab-cuentas").classList.toggle("hidden", btn.dataset.tab !== "cuentas");
+        ["inventario", "ventas", "cuentas"].forEach(t => {
+          document.getElementById("tab-" + t).classList.toggle("hidden", btn.dataset.tab !== t);
+        });
       });
+    });
+
+    // Cerrar modales al hacer clic fuera
+    document.getElementById("modal-editar").addEventListener("click", (e) => {
+      if (e.target.id === "modal-editar") cerrarModalEditar();
+    });
+    document.getElementById("modal-vender").addEventListener("click", (e) => {
+      if (e.target.id === "modal-vender") cerrarModalVender();
     });
 
     render();
