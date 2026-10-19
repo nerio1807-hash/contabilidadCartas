@@ -706,6 +706,10 @@
           <div class="label">Efectivo <button type="button" class="btn-sm" style="padding:0.15rem 0.45rem;margin-left:0.25rem" onclick="editarEfectivo()">✏️</button></div>
           <div class="value" id="stat-efectivo">$0</div>
         </div>
+        <div class="stat">
+          <div class="label">Otros ingresos</div>
+          <div class="value green" id="stat-ingresos">$0</div>
+        </div>
       </div>
 
       <div class="filters" id="filtros-categoria">
@@ -789,10 +793,56 @@
       <!-- VENTAS -->
       <section id="tab-ventas" class="hidden">
         <div class="panel">
-          <h2>Historial de ventas</h2>
-          <div style="margin-bottom:1rem">
+          <h2>Registrar</h2>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
             <button type="button" class="btn-success" onclick="abrirVentaVarias()">💰 Vender varias cartas</button>
+            <button type="button" class="btn-success" onclick="toggleForm('form-bulk')">🧺 Venta de bulk</button>
+            <button type="button" class="btn-success" onclick="toggleForm('form-ingreso')">💵 Reembolso / Otro ingreso</button>
           </div>
+
+          <form id="form-bulk" class="form-grid hidden">
+            <div>
+              <label>¿Qué vendiste? (bulk)</label>
+              <input type="text" id="b-nombre" required placeholder="Ej: Lote de 30 cartas comunes">
+            </div>
+            <div>
+              <label>¿Cuánto te pagaron?</label>
+              <input type="number" id="b-monto" min="0" step="0.01" required placeholder="0.00">
+            </div>
+            <div>
+              <label>¿Cuánto te costó? (opcional)</label>
+              <input type="number" id="b-costo" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+              <label>De quién es</label>
+              <input type="text" id="b-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+            </div>
+            <div>
+              <button type="submit" class="btn-success">Registrar venta</button>
+            </div>
+          </form>
+
+          <form id="form-ingreso" class="form-grid hidden">
+            <div>
+              <label>Descripción</label>
+              <input type="text" id="i-descripcion" required placeholder="Ej: Reembolso de envío">
+            </div>
+            <div>
+              <label>Monto recibido</label>
+              <input type="number" id="i-monto" min="0" step="0.01" required placeholder="0.00">
+            </div>
+            <div>
+              <label>De quién es</label>
+              <input type="text" id="i-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+            </div>
+            <div>
+              <button type="submit" class="btn-success">Registrar ingreso</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2>Historial de ventas</h2>
           <div style="overflow-x:auto">
             <table>
               <thead>
@@ -811,6 +861,24 @@
             </table>
           </div>
           <p class="empty hidden" id="empty-ventas">Aún no has registrado ventas.</p>
+        </div>
+
+        <div class="panel hidden" id="panel-ingresos">
+          <h2>Otros ingresos <span style="color:var(--muted);font-weight:400;font-size:0.9rem" id="cont-ingresos"></span></h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>De quién</th>
+                  <th>Monto</th>
+                  <th>Fecha</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabla-ingresos"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -1018,8 +1086,9 @@
     let accountsUnsub = null;
     let salesUnsub = null;
     let cashUnsub = null;
+    let incomeUnsub = null;
 
-    let data = { productos: [], cuentas: [], ventas: [], efectivo: 0 };
+    let data = { productos: [], cuentas: [], ventas: [], ingresos: [], efectivo: 0 };
 
     let editandoId = null;
     let vendiendoId = null;
@@ -1242,7 +1311,7 @@
         document.getElementById("app").classList.add("hidden");
         document.getElementById("login-screen").classList.remove("hidden");
         stopListeners();
-        data = { productos: [], cuentas: [], ventas: [], efectivo: 0 };
+        data = { productos: [], cuentas: [], ventas: [], ingresos: [], efectivo: 0 };
         render();
         return;
       }
@@ -1266,6 +1335,7 @@
       if (accountsUnsub) { accountsUnsub(); accountsUnsub = null; }
       if (salesUnsub) { salesUnsub(); salesUnsub = null; }
       if (cashUnsub) { cashUnsub(); cashUnsub = null; }
+      if (incomeUnsub) { incomeUnsub(); incomeUnsub = null; }
     }
 
     function startListeners() {
@@ -1290,6 +1360,11 @@
         data.efectivo = doc.exists ? (Number(doc.data().efectivo) || 0) : 0;
         render();
       }, (err) => toast("Error cargando efectivo: " + err.message));
+
+      incomeUnsub = userCol("ingresos").onSnapshot((snap) => {
+        data.ingresos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, (err) => toast("Error cargando ingresos: " + err.message));
     }
 
     async function editarEfectivo() {
@@ -1660,6 +1735,90 @@
 
     document.getElementById("vv-buscar").addEventListener("input", renderVVGrid);
 
+    // ---- Venta de bulk y otros ingresos ----
+    function toggleForm(id) {
+      ["form-bulk", "form-ingreso"].forEach(f => {
+        document.getElementById(f).classList.toggle("hidden", f !== id);
+      });
+      const el = document.getElementById(id);
+      if (el.classList.contains("hidden")) return;
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      el.querySelector("input").focus();
+    }
+
+    document.getElementById("form-bulk").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.submitter || e.target.querySelector("button[type='submit']");
+      btn.disabled = true;
+      try {
+        const monto = Number(document.getElementById("b-monto").value) || 0;
+        const costo = Number(document.getElementById("b-costo").value) || 0;
+        await userCol("ventas").add({
+          tipo: "bulk",
+          productoId: null,
+          nombre: "🧺 " + document.getElementById("b-nombre").value.trim(),
+          foto: "",
+          dueno: document.getElementById("b-dueno").value.trim() || "Yo",
+          categoria: filtroCat !== "todos" ? filtroCat : "Pokémon",
+          cantidad: 1,
+          precioUnit: monto,
+          costoUnit: costo,
+          total: monto,
+          ganancia: monto - costo,
+          fecha: new Date().toISOString()
+        });
+        e.target.reset();
+        document.getElementById("b-dueno").value = "Yo";
+        document.getElementById("form-bulk").classList.add("hidden");
+        toast("Venta de bulk registrada: " + money(monto));
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+      btn.disabled = false;
+    });
+
+    document.getElementById("form-ingreso").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.submitter || e.target.querySelector("button[type='submit']");
+      btn.disabled = true;
+      try {
+        const monto = Number(document.getElementById("i-monto").value) || 0;
+        await userCol("ingresos").add({
+          descripcion: document.getElementById("i-descripcion").value.trim(),
+          monto,
+          dueno: document.getElementById("i-dueno").value.trim() || "Yo",
+          fecha: new Date().toISOString()
+        });
+        await userCol("ajustes").doc("caja").set({
+          efectivo: (Number(data.efectivo) || 0) + monto,
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        e.target.reset();
+        document.getElementById("i-dueno").value = "Yo";
+        document.getElementById("form-ingreso").classList.add("hidden");
+        toast("Ingreso registrado: " + money(monto) + " (Efectivo y Vendido actualizados)");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+      btn.disabled = false;
+    });
+
+    async function eliminarIngreso(id) {
+      const ing = data.ingresos.find(x => x.id === id);
+      if (!ing) return;
+      if (!confirm("¿Eliminar este ingreso? Se restará " + money(ing.monto || 0) + " de Efectivo y Vendido.")) return;
+      try {
+        await userCol("ingresos").doc(id).delete();
+        await userCol("ajustes").doc("caja").set({
+          efectivo: Math.max(0, (Number(data.efectivo) || 0) - (Number(ing.monto) || 0)),
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        toast("Ingreso eliminado");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
     // ---- Cuentas ----
     // ---- Elegir cartas para cuenta por cobrar ----
     let cartasSel = [];
@@ -1970,6 +2129,7 @@
       const productos = data.productos.filter(pertenece);
       const ventas = data.ventas.filter(pertenece);
       const cuentas = data.cuentas.filter(c => filtroDueno === "todos" || (c.dueno || "Yo") === filtroDueno);
+      const ingresos = data.ingresos.filter(i => filtroDueno === "todos" || (i.dueno || "Yo") === filtroDueno);
 
       // Productos como tarjetas
       const grid = document.getElementById("grid-productos");
@@ -2047,6 +2207,20 @@
 
       document.getElementById("empty-ventas").classList.toggle("hidden", ventas.length > 0);
 
+      // Otros ingresos
+      const tbodyI = document.getElementById("tabla-ingresos");
+      const ingresosOrdenados = [...ingresos].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+      tbodyI.innerHTML = ingresosOrdenados.map(i => `
+        <tr>
+          <td>${escapeHtml(i.descripcion)}</td>
+          <td>${escapeHtml(i.dueno || "Yo")}</td>
+          <td><strong>${money(i.monto)}</strong></td>
+          <td>${i.fecha ? new Date(i.fecha).toLocaleDateString("es-MX") : "—"}</td>
+          <td><button class="btn-danger btn-sm" onclick="eliminarIngreso('${i.id}')">🗑️</button></td>
+        </tr>`).join("");
+      document.getElementById("panel-ingresos").classList.toggle("hidden", ingresos.length === 0);
+      document.getElementById("cont-ingresos").textContent = "(" + ingresos.length + ")";
+
       // Cuentas
       const tbodyC = document.getElementById("tabla-cuentas");
       const thumbsCuenta = (c) => (c.productos || [])
@@ -2079,7 +2253,8 @@
       const pagadas = cuentas.filter(c => c.pagada);
       const vendidoCuentas = pagadas.reduce((s, c) => s + (Number(c.monto) || 0), 0);
       const gananciaCuentas = pagadas.reduce((s, c) => s + gananciaDeCuenta(c), 0);
-      const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0) + vendidoCuentas;
+      const totalIngresos = ingresos.reduce((s, i) => s + (Number(i.monto) || 0), 0);
+      const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0) + vendidoCuentas + totalIngresos;
       const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0) + gananciaCuentas;
       const pendiente = cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
 
@@ -2089,6 +2264,7 @@
       document.getElementById("stat-ganancia").textContent = money(ganancia);
       document.getElementById("stat-pendiente").textContent = money(pendiente);
       document.getElementById("stat-efectivo").textContent = money(data.efectivo || 0);
+      document.getElementById("stat-ingresos").textContent = money(totalIngresos);
     }
 
     // ---- Tabs ----
