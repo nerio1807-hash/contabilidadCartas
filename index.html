@@ -1803,14 +1803,72 @@
       btn.disabled = false;
     });
 
+    function costoCuenta(c) {
+      return (c.productos || []).reduce((s, x) => {
+        const p = data.productos.find(pp => pp.id === x.id);
+        return s + (p && p.costo ? Number(p.costo) : 0);
+      }, 0);
+    }
+
+    function gananciaDeCuenta(c) {
+      if (typeof c.ganancia === "number") return c.ganancia;
+      return (Number(c.monto) || 0) - costoCuenta(c);
+    }
+
     async function alternarPagada(id) {
       const c = data.cuentas.find(x => x.id === id);
       if (!c) return;
-      try {
-        await userCol("cuentas").doc(id).update({ pagada: !c.pagada });
-        toast(!c.pagada ? "Marcada como pagada" : "Marcada como pendiente");
-      } catch (err) {
-        toast("Error: " + err.message);
+      const monto = Number(c.monto) || 0;
+      const nCartas = (c.productos || []).length;
+
+      if (!c.pagada) {
+        const detalle = nCartas
+          ? " Se descontarán " + nCartas + " carta(s) del stock, se sumará " + money(monto) + " a Vendido y al Efectivo."
+          : " Se sumará " + money(monto) + " a Vendido y al Efectivo.";
+        if (!confirm("¿Marcar como pagada?" + detalle)) return;
+        try {
+          await userCol("cuentas").doc(id).update({
+            pagada: true,
+            pagadaFecha: new Date().toISOString(),
+            ganancia: monto - costoCuenta(c)
+          });
+          for (const x of (c.productos || [])) {
+            const p = data.productos.find(pp => pp.id === x.id);
+            if (!p) continue;
+            await userCol("productos").doc(x.id).update({
+              cantidad: Math.max(0, (Number(p.cantidad) || 0) - 1)
+            });
+          }
+          await userCol("ajustes").doc("caja").set({
+            efectivo: (Number(data.efectivo) || 0) + monto,
+            actualizado: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          toast("¡Cuenta pagada! " + money(monto) + " agregado a Vendido y Efectivo");
+        } catch (err) {
+          toast("Error: " + err.message);
+        }
+      } else {
+        const detalle = nCartas
+          ? " Las " + nCartas + " carta(s) vuelven al stock y se restará " + money(monto) + " de Vendido y del Efectivo."
+          : " Se restará " + money(monto) + " de Vendido y del Efectivo.";
+        if (!confirm("¿Reabrir esta cuenta?" + detalle)) return;
+        try {
+          await userCol("cuentas").doc(id).update({ pagada: false, pagadaFecha: null, ganancia: null });
+          for (const x of (c.productos || [])) {
+            const p = data.productos.find(pp => pp.id === x.id);
+            if (!p) continue;
+            await userCol("productos").doc(x.id).update({
+              cantidad: (Number(p.cantidad) || 0) + 1
+            });
+          }
+          await userCol("ajustes").doc("caja").set({
+            efectivo: Math.max(0, (Number(data.efectivo) || 0) - monto),
+            actualizado: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          toast("Cuenta reabierta");
+        } catch (err) {
+          toast("Error: " + err.message);
+        }
       }
     }
 
@@ -2018,8 +2076,11 @@
       // Stats (según filtro)
       const valorInventario = productos.reduce((s, p) => s + (p.cantidad || 0) * (p.precio || 0), 0);
       const invertido = productos.reduce((s, p) => s + (p.cantidad || 0) * (p.costo || 0), 0);
-      const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0);
-      const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0);
+      const pagadas = cuentas.filter(c => c.pagada);
+      const vendidoCuentas = pagadas.reduce((s, c) => s + (Number(c.monto) || 0), 0);
+      const gananciaCuentas = pagadas.reduce((s, c) => s + gananciaDeCuenta(c), 0);
+      const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0) + vendidoCuentas;
+      const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0) + gananciaCuentas;
       const pendiente = cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
 
       document.getElementById("stat-inventario").textContent = money(valorInventario);
