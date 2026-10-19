@@ -1576,9 +1576,19 @@
     });
 
     async function eliminarVenta(id) {
-      if (!confirm("¿Eliminar este registro de venta? (No devuelve la carta al inventario)")) return;
+      const v = data.ventas.find(x => x.id === id);
+      const esBulk = v && v.tipo === "bulk";
+      if (!confirm(esBulk
+        ? "¿Eliminar esta venta de bulk? Se restará " + money(v.total || 0) + " de Efectivo, Vendido y Otros ingresos."
+        : "¿Eliminar este registro de venta? (No devuelve la carta al inventario)")) return;
       try {
         await userCol("ventas").doc(id).delete();
+        if (esBulk) {
+          await userCol("ajustes").doc("caja").set({
+            efectivo: Math.max(0, (Number(data.efectivo) || 0) - (Number(v.total) || 0)),
+            actualizado: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
         toast("Venta eliminada");
       } catch (err) {
         toast("Error: " + err.message);
@@ -1767,10 +1777,14 @@
           ganancia: monto - costo,
           fecha: new Date().toISOString()
         });
+        await userCol("ajustes").doc("caja").set({
+          efectivo: (Number(data.efectivo) || 0) + monto,
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
         e.target.reset();
         document.getElementById("b-dueno").value = "Yo";
         document.getElementById("form-bulk").classList.add("hidden");
-        toast("Venta de bulk registrada: " + money(monto));
+        toast("Bulk registrado: " + money(monto) + " (Efectivo actualizado)");
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -2207,19 +2221,28 @@
 
       document.getElementById("empty-ventas").classList.toggle("hidden", ventas.length > 0);
 
-      // Otros ingresos
+      // Otros ingresos (reembolsos + ventas de bulk)
       const tbodyI = document.getElementById("tabla-ingresos");
-      const ingresosOrdenados = [...ingresos].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
-      tbodyI.innerHTML = ingresosOrdenados.map(i => `
+      const ingresosVisibles = [
+        ...ingresos.map(i => ({
+          id: i.id, desc: i.descripcion, monto: i.monto, fecha: i.fecha,
+          dueno: i.dueno, tipo: "ingreso", handler: "eliminarIngreso"
+        })),
+        ...ventas.filter(v => v.tipo === "bulk").map(v => ({
+          id: v.id, desc: v.nombre, monto: v.total, fecha: v.fecha,
+          dueno: v.dueno, tipo: "bulk", handler: "eliminarVenta"
+        }))
+      ].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+      tbodyI.innerHTML = ingresosVisibles.map(i => `
         <tr>
-          <td>${escapeHtml(i.descripcion)}</td>
+          <td>${escapeHtml(i.desc)}</td>
           <td>${escapeHtml(i.dueno || "Yo")}</td>
           <td><strong>${money(i.monto)}</strong></td>
           <td>${i.fecha ? new Date(i.fecha).toLocaleDateString("es-MX") : "—"}</td>
-          <td><button class="btn-danger btn-sm" onclick="eliminarIngreso('${i.id}')">🗑️</button></td>
+          <td><button class="btn-danger btn-sm" onclick="${i.handler}('${i.id}')">🗑️</button></td>
         </tr>`).join("");
-      document.getElementById("panel-ingresos").classList.toggle("hidden", ingresos.length === 0);
-      document.getElementById("cont-ingresos").textContent = "(" + ingresos.length + ")";
+      document.getElementById("panel-ingresos").classList.toggle("hidden", ingresosVisibles.length === 0);
+      document.getElementById("cont-ingresos").textContent = "(" + ingresosVisibles.length + ")";
 
       // Cuentas
       const tbodyC = document.getElementById("tabla-cuentas");
@@ -2254,6 +2277,7 @@
       const vendidoCuentas = pagadas.reduce((s, c) => s + (Number(c.monto) || 0), 0);
       const gananciaCuentas = pagadas.reduce((s, c) => s + gananciaDeCuenta(c), 0);
       const totalIngresos = ingresos.reduce((s, i) => s + (Number(i.monto) || 0), 0);
+      const totalBulk = ventas.filter(v => v.tipo === "bulk").reduce((s, v) => s + (Number(v.total) || 0), 0);
       const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0) + vendidoCuentas + totalIngresos;
       const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0) + gananciaCuentas;
       const pendiente = cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
@@ -2264,7 +2288,7 @@
       document.getElementById("stat-ganancia").textContent = money(ganancia);
       document.getElementById("stat-pendiente").textContent = money(pendiente);
       document.getElementById("stat-efectivo").textContent = money(data.efectivo || 0);
-      document.getElementById("stat-ingresos").textContent = money(totalIngresos);
+      document.getElementById("stat-ingresos").textContent = money(totalIngresos + totalBulk);
     }
 
     // ---- Tabs ----
