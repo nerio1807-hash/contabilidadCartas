@@ -152,6 +152,28 @@
 
     .tag-row { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 
+    .inv-tools {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .inv-tools input[type="text"] { flex: 1; min-width: 170px; width: auto; }
+    .inv-tools select { width: auto; min-width: 150px; }
+
+    .stock-btns {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+      flex-wrap: wrap;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.35rem 0.5rem;
+    }
+
     .tab {
       background: var(--panel);
       color: var(--text);
@@ -710,6 +732,10 @@
           <div class="label">Otros ingresos</div>
           <div class="value green" id="stat-ingresos">$0</div>
         </div>
+        <div class="stat">
+          <div class="label">Egresos</div>
+          <div class="value red" id="stat-egresos">$0</div>
+        </div>
       </div>
 
       <div class="filters" id="filtros-categoria">
@@ -785,6 +811,18 @@
 
         <div class="panel">
           <h2>Mis cartas <span style="color:var(--muted);font-weight:400;font-size:0.9rem" id="cont-productos"></span></h2>
+          <div class="inv-tools">
+            <input type="text" id="buscar-prod" placeholder="🔍 Buscar por nombre...">
+            <select id="orden-prod" title="Ordenar">
+              <option value="recientes">Más recientes</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="nombre">Nombre A-Z</option>
+            </select>
+            <div class="stock-btns" id="filtros-stock">
+              <span class="filters-label">Stock:</span>
+            </div>
+          </div>
           <div class="cards-grid" id="grid-productos"></div>
           <p class="empty hidden" id="empty-productos">Aún no hay cartas. ¡Agrega la primera arriba!</p>
         </div>
@@ -798,6 +836,7 @@
             <button type="button" class="btn-success" onclick="abrirVentaVarias()">💰 Vender varias cartas</button>
             <button type="button" class="btn-success" onclick="toggleForm('form-bulk')">🧺 Venta de bulk</button>
             <button type="button" class="btn-success" onclick="toggleForm('form-ingreso')">💵 Reembolso / Otro ingreso</button>
+            <button type="button" class="btn-danger" onclick="toggleForm('form-egreso')">🛒 Gasto / Compra</button>
           </div>
 
           <form id="form-bulk" class="form-grid hidden">
@@ -839,6 +878,24 @@
               <button type="submit" class="btn-success">Registrar ingreso</button>
             </div>
           </form>
+
+          <form id="form-egreso" class="form-grid hidden">
+            <div>
+              <label>¿En qué gastaste?</label>
+              <input type="text" id="g-descripcion" required placeholder="Ej: Compra de 20 cartas / Empastilladores">
+            </div>
+            <div>
+              <label>Monto pagado</label>
+              <input type="number" id="g-monto" min="0" step="0.01" required placeholder="0.00">
+            </div>
+            <div>
+              <label>De quién es</label>
+              <input type="text" id="g-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+            </div>
+            <div>
+              <button type="submit" class="btn-danger">Registrar gasto</button>
+            </div>
+          </form>
         </div>
 
         <div class="panel">
@@ -877,6 +934,24 @@
                 </tr>
               </thead>
               <tbody id="tabla-ingresos"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel hidden" id="panel-egresos">
+          <h2>Egresos <span style="color:var(--muted);font-weight:400;font-size:0.9rem" id="cont-egresos"></span></h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>De quién</th>
+                  <th>Monto</th>
+                  <th>Fecha</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabla-egresos"></tbody>
             </table>
           </div>
         </div>
@@ -1087,8 +1162,9 @@
     let salesUnsub = null;
     let cashUnsub = null;
     let incomeUnsub = null;
+    let expenseUnsub = null;
 
-    let data = { productos: [], cuentas: [], ventas: [], ingresos: [], efectivo: 0 };
+    let data = { productos: [], cuentas: [], ventas: [], ingresos: [], egresos: [], efectivo: 0 };
 
     let editandoId = null;
     let vendiendoId = null;
@@ -1096,6 +1172,18 @@
     let fotoEditPendiente = "";
     let filtroDueno = "Yo";
     let filtroCat = "todos";
+    let buscarProd = "";
+    let ordenProd = "recientes";
+    let filtroStock = "todas";
+
+    document.getElementById("buscar-prod").addEventListener("input", (e) => {
+      buscarProd = e.target.value;
+      render();
+    });
+    document.getElementById("orden-prod").addEventListener("change", (e) => {
+      ordenProd = e.target.value;
+      render();
+    });
 
     function procesarFoto(file, callback) {
       if (!file) return;
@@ -1311,7 +1399,7 @@
         document.getElementById("app").classList.add("hidden");
         document.getElementById("login-screen").classList.remove("hidden");
         stopListeners();
-        data = { productos: [], cuentas: [], ventas: [], ingresos: [], efectivo: 0 };
+        data = { productos: [], cuentas: [], ventas: [], ingresos: [], egresos: [], efectivo: 0 };
         render();
         return;
       }
@@ -1336,6 +1424,7 @@
       if (salesUnsub) { salesUnsub(); salesUnsub = null; }
       if (cashUnsub) { cashUnsub(); cashUnsub = null; }
       if (incomeUnsub) { incomeUnsub(); incomeUnsub = null; }
+      if (expenseUnsub) { expenseUnsub(); expenseUnsub = null; }
     }
 
     function startListeners() {
@@ -1365,6 +1454,11 @@
         data.ingresos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         render();
       }, (err) => toast("Error cargando ingresos: " + err.message));
+
+      expenseUnsub = userCol("egresos").onSnapshot((snap) => {
+        data.egresos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, (err) => toast("Error cargando egresos: " + err.message));
     }
 
     async function editarEfectivo() {
@@ -1747,7 +1841,7 @@
 
     // ---- Venta de bulk y otros ingresos ----
     function toggleForm(id) {
-      ["form-bulk", "form-ingreso"].forEach(f => {
+      ["form-bulk", "form-ingreso", "form-egreso"].forEach(f => {
         document.getElementById(f).classList.toggle("hidden", f !== id);
       });
       const el = document.getElementById(id);
@@ -1828,6 +1922,48 @@
           actualizado: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         toast("Ingreso eliminado");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    document.getElementById("form-egreso").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.submitter || e.target.querySelector("button[type='submit']");
+      btn.disabled = true;
+      try {
+        const monto = Number(document.getElementById("g-monto").value) || 0;
+        await userCol("egresos").add({
+          descripcion: document.getElementById("g-descripcion").value.trim(),
+          monto,
+          dueno: document.getElementById("g-dueno").value.trim() || "Yo",
+          fecha: new Date().toISOString()
+        });
+        await userCol("ajustes").doc("caja").set({
+          efectivo: Math.max(0, (Number(data.efectivo) || 0) - monto),
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        e.target.reset();
+        document.getElementById("g-dueno").value = "Yo";
+        document.getElementById("form-egreso").classList.add("hidden");
+        toast("Gasto registrado: " + money(monto) + " (Efectivo actualizado)");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+      btn.disabled = false;
+    });
+
+    async function eliminarEgreso(id) {
+      const eg = data.egresos.find(x => x.id === id);
+      if (!eg) return;
+      if (!confirm("¿Eliminar este gasto? Se devolverán " + money(eg.monto || 0) + " a tu Efectivo.")) return;
+      try {
+        await userCol("egresos").doc(id).delete();
+        await userCol("ajustes").doc("caja").set({
+          efectivo: (Number(data.efectivo) || 0) + (Number(eg.monto) || 0),
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        toast("Gasto eliminado");
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -2144,10 +2280,48 @@
       const ventas = data.ventas.filter(pertenece);
       const cuentas = data.cuentas.filter(c => filtroDueno === "todos" || (c.dueno || "Yo") === filtroDueno);
       const ingresos = data.ingresos.filter(i => filtroDueno === "todos" || (i.dueno || "Yo") === filtroDueno);
+      const egresos = data.egresos.filter(g => filtroDueno === "todos" || (g.dueno || "Yo") === filtroDueno);
+
+      // Botones de stock
+      const stockEl = document.getElementById("filtros-stock");
+      const conStock = productos.filter(p => (p.cantidad || 0) > 0).length;
+      const agotadas = productos.length - conStock;
+      const opcionesStock = [
+        ["todas", "Todas (" + productos.length + ")"],
+        ["stock", "En stock (" + conStock + ")"],
+        ["agotadas", "Agotadas (" + agotadas + ")"]
+      ];
+      stockEl.innerHTML = '<span class="filters-label">Stock:</span>' +
+        opcionesStock.map(([v, t]) =>
+          `<button type="button" class="filter-btn ${filtroStock === v ? "active" : ""}" data-stock="${v}">${t}</button>`
+        ).join("");
+      stockEl.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          filtroStock = btn.dataset.stock;
+          render();
+        });
+      });
+
+      // Búsqueda + stock + orden (solo afecta la cuadrícula, no los números)
+      let visibles = productos;
+      const q = buscarProd.toLowerCase().trim();
+      if (q) visibles = visibles.filter(p => (p.nombre || "").toLowerCase().includes(q));
+      if (filtroStock === "stock") visibles = visibles.filter(p => (p.cantidad || 0) > 0);
+      else if (filtroStock === "agotadas") visibles = visibles.filter(p => !(p.cantidad || 0));
+
+      if (ordenProd === "precio-desc") {
+        visibles = [...visibles].sort((a, b) => (Number(b.precio) || 0) - (Number(a.precio) || 0));
+      } else if (ordenProd === "precio-asc") {
+        visibles = [...visibles].sort((a, b) => (Number(a.precio) || 0) - (Number(b.precio) || 0));
+      } else if (ordenProd === "nombre") {
+        visibles = [...visibles].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+      } else {
+        visibles = [...visibles].sort((a, b) => (b.id || "").localeCompare(a.id || ""));
+      }
 
       // Productos como tarjetas
       const grid = document.getElementById("grid-productos");
-      grid.innerHTML = productos.map(p => {
+      grid.innerHTML = visibles.map(p => {
         const stockBadge = !p.cantidad
           ? '<span class="badge badge-red">Agotado</span>'
           : p.cantidad <= 2
@@ -2201,8 +2375,17 @@
           </div>`;
       }).join("");
 
-      document.getElementById("empty-productos").classList.toggle("hidden", productos.length > 0);
-      document.getElementById("cont-productos").textContent = productos.length ? "(" + productos.length + ")" : "";
+      const emptyEl = document.getElementById("empty-productos");
+      emptyEl.classList.toggle("hidden", visibles.length > 0);
+      if (visibles.length === 0) {
+        emptyEl.textContent = productos.length === 0
+          ? "Aún no hay cartas. ¡Agrega la primera arriba!"
+          : "No hay cartas que coincidan con la búsqueda o el filtro de stock.";
+      }
+      document.getElementById("cont-productos").textContent =
+        visibles.length === productos.length
+          ? (productos.length ? "(" + productos.length + ")" : "")
+          : "(" + visibles.length + " de " + productos.length + ")";
 
       // Ventas
       const tbodyV = document.getElementById("tabla-ventas");
@@ -2244,6 +2427,20 @@
       document.getElementById("panel-ingresos").classList.toggle("hidden", ingresosVisibles.length === 0);
       document.getElementById("cont-ingresos").textContent = "(" + ingresosVisibles.length + ")";
 
+      // Egresos
+      const tbodyG = document.getElementById("tabla-egresos");
+      const egresosOrdenados = [...egresos].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+      tbodyG.innerHTML = egresosOrdenados.map(g => `
+        <tr>
+          <td>${escapeHtml(g.descripcion)}</td>
+          <td>${escapeHtml(g.dueno || "Yo")}</td>
+          <td><strong>${money(g.monto)}</strong></td>
+          <td>${g.fecha ? new Date(g.fecha).toLocaleDateString("es-MX") : "—"}</td>
+          <td><button class="btn-danger btn-sm" onclick="eliminarEgreso('${g.id}')">🗑️</button></td>
+        </tr>`).join("");
+      document.getElementById("panel-egresos").classList.toggle("hidden", egresos.length === 0);
+      document.getElementById("cont-egresos").textContent = "(" + egresos.length + ")";
+
       // Cuentas
       const tbodyC = document.getElementById("tabla-cuentas");
       const thumbsCuenta = (c) => (c.productos || [])
@@ -2278,6 +2475,7 @@
       const gananciaCuentas = pagadas.reduce((s, c) => s + gananciaDeCuenta(c), 0);
       const totalIngresos = ingresos.reduce((s, i) => s + (Number(i.monto) || 0), 0);
       const totalBulk = ventas.filter(v => v.tipo === "bulk").reduce((s, v) => s + (Number(v.total) || 0), 0);
+      const totalEgresos = egresos.reduce((s, g) => s + (Number(g.monto) || 0), 0);
       const vendido = ventas.reduce((s, v) => s + (v.total || 0), 0) + vendidoCuentas + totalIngresos;
       const ganancia = ventas.reduce((s, v) => s + (v.ganancia || 0), 0) + gananciaCuentas;
       const pendiente = cuentas.filter(c => !c.pagada).reduce((s, c) => s + (c.monto || 0), 0);
@@ -2289,6 +2487,7 @@
       document.getElementById("stat-pendiente").textContent = money(pendiente);
       document.getElementById("stat-efectivo").textContent = money(data.efectivo || 0);
       document.getElementById("stat-ingresos").textContent = money(totalIngresos + totalBulk);
+      document.getElementById("stat-egresos").textContent = money(totalEgresos);
     }
 
     // ---- Tabs ----
