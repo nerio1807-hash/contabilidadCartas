@@ -1804,6 +1804,7 @@
       }
 
       try {
+        const totalVenta = cantVendida * precioUnit;
         await userCol("ventas").add({
           productoId: p.id,
           nombre: p.nombre,
@@ -1813,8 +1814,9 @@
           cantidad: cantVendida,
           precioUnit,
           costoUnit: p.costo || 0,
-          total: cantVendida * precioUnit,
+          total: totalVenta,
           ganancia: cantVendida * (precioUnit - (p.costo || 0)),
+          efectivoSumado: true,
           fecha: new Date().toISOString()
         });
 
@@ -1822,8 +1824,13 @@
           cantidad: p.cantidad - cantVendida
         });
 
+        await userCol("ajustes").doc("caja").set({
+          efectivo: (Number(data.efectivo) || 0) + totalVenta,
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
         cerrarModalVender();
-        toast("¡Venta registrada!");
+        toast("¡Venta registrada! " + money(totalVenta) + " agregado al Efectivo");
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -1832,18 +1839,42 @@
     async function eliminarVenta(id) {
       const v = data.ventas.find(x => x.id === id);
       const esBulk = v && v.tipo === "bulk";
-      if (!confirm(esBulk
-        ? "¿Eliminar esta venta de bulk? Se restará " + money(v.total || 0) + " de Efectivo, Vendido y Otros ingresos."
-        : "¿Eliminar este registro de venta? (No devuelve la carta al inventario)")) return;
+      const sumaEfectivo = v && (esBulk || v.efectivoSumado);
+      const devuelveStock = v && v.productoId && !esBulk;
+      if (!confirm("¿Eliminar esta venta?" +
+        (sumaEfectivo ? " Se restará " + money(v.total || 0) + " de tu Efectivo" + (esBulk ? ", Vendido y Otros ingresos" : "") + "." : "") +
+        (devuelveStock ? " Las " + (v.cantidad || 1) + " carta(s) volverán al inventario." : ""))) return;
       try {
         await userCol("ventas").doc(id).delete();
-        if (esBulk) {
+        if (sumaEfectivo) {
           await userCol("ajustes").doc("caja").set({
             efectivo: Math.max(0, (Number(data.efectivo) || 0) - (Number(v.total) || 0)),
             actualizado: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
         }
-        toast("Venta eliminada");
+        let stockDevuelto = false;
+        if (devuelveStock) {
+          const p = data.productos.find(x => x.id === v.productoId);
+          if (p) {
+            await userCol("productos").doc(v.productoId).update({
+              cantidad: (Number(p.cantidad) || 0) + (Number(v.cantidad) || 1)
+            });
+            stockDevuelto = true;
+          } else {
+            await userCol("productos").doc(v.productoId).set({
+              nombre: v.nombre || "Carta",
+              foto: v.foto || "",
+              dueno: v.dueno || "Yo",
+              categoria: v.categoria || "Pokémon",
+              cantidad: Number(v.cantidad) || 1,
+              costo: Number(v.costoUnit) || 0,
+              precio: Number(v.precioUnit) || 0,
+              creado: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            stockDevuelto = true;
+          }
+        }
+        toast("Venta eliminada" + (stockDevuelto ? " — cartas devueltas al inventario" : ""));
       } catch (err) {
         toast("Error: " + err.message);
       }
@@ -1970,6 +2001,7 @@
         return;
       }
       try {
+        let totalVenta = 0;
         for (const { p, cant, precio } of filas) {
           await userCol("ventas").add({
             productoId: p.id,
@@ -1982,16 +2014,23 @@
             costoUnit: p.costo || 0,
             total: cant * precio,
             ganancia: cant * (precio - (p.costo || 0)),
+            efectivoSumado: true,
             fecha: new Date().toISOString()
           });
           await userCol("productos").doc(p.id).update({
             cantidad: (p.cantidad || 0) - cant
           });
+          totalVenta += cant * precio;
         }
+        await userCol("ajustes").doc("caja").set({
+          efectivo: (Number(data.efectivo) || 0) + totalVenta,
+          actualizado: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
         cerrarVentaVarias();
-        toast(filas.length === 1
+        toast((filas.length === 1
           ? "¡Venta registrada!"
-          : "¡Venta de " + filas.length + " cartas registrada!");
+          : "¡Venta de " + filas.length + " cartas registrada!") +
+          " " + money(totalVenta) + " al Efectivo");
       } catch (err) {
         if (err.message !== "cantidad") toast("Error: " + err.message);
       }
