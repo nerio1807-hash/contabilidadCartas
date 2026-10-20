@@ -243,7 +243,7 @@
       min-width: 200px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 0.55rem;
       border: 1px solid var(--border);
@@ -252,6 +252,8 @@
       background: var(--bg);
       color: var(--text);
     }
+
+    textarea { resize: vertical; }
 
     input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
 
@@ -761,6 +763,32 @@
             <input type="file" id="file-collectr" accept=".csv,text/csv" class="hidden">
             <span class="import-hint">Exporta tu portafolio de Collectr a CSV y trae nombre, foto y cantidad. Los precios los pones tú después.</span>
           </div>
+          <div class="import-row">
+            <button type="button" class="btn-light" id="btn-lista-cartas">📋 Pegar lista de cartas (varias de golpe)</button>
+            <span class="import-hint">Pega los nombres, uno por línea. Si ya tienes el link de la foto, ponlo después de una coma: nombre, https://...</span>
+          </div>
+          <div class="import-row">
+            <button type="button" class="btn-light" id="btn-fotos-masivas">📷 Subir varias fotos (de golpe)</button>
+            <input type="file" id="file-fotos" accept="image/*" multiple class="hidden">
+            <span class="import-hint">Elige varias fotos de tu compu a la vez — cada foto se vuelve una carta con su imagen. El nombre queda el del archivo; luego le pones el nombre real y el precio con ✏️.</span>
+          </div>
+          <form id="form-lista" class="form-grid hidden">
+            <div style="grid-column: 1 / -1">
+              <label>Nombres (uno por línea — o nombre, enlace de la foto)</label>
+              <textarea id="l-nombres" rows="8" required placeholder="LeBron James Topps&#10;Michael Jordan Fleer, https://i.imgur.com/xxx.jpg&#10;Luka Doncic Prizm&#10;..."></textarea>
+            </div>
+            <div>
+              <label>Categoría</label>
+              <input type="text" id="l-categoria" list="lista-categorias" value="Deporte" placeholder="Deporte">
+            </div>
+            <div>
+              <label>De quién es</label>
+              <input type="text" id="l-dueno" list="lista-duenos" value="Yo" placeholder="Yo">
+            </div>
+            <div>
+              <button type="submit" class="btn-success">Agregar todas</button>
+            </div>
+          </form>
           <form id="form-producto" class="form-grid">
             <div>
               <label>Nombre</label>
@@ -1040,6 +1068,7 @@
         <div>
           <label>O pega un enlace de internet</label>
           <input type="url" id="e-foto-url" placeholder="https://...">
+          <button type="button" class="btn-light btn-sm" id="btn-buscar-img" style="margin-top:0.4rem">🔍 Buscar imagen en Google</button>
         </div>
         <div>
           <label>Cantidad</label>
@@ -1264,6 +1293,128 @@
       }
       return -1;
     }
+
+    document.getElementById("btn-lista-cartas").addEventListener("click", () => {
+      document.getElementById("form-lista").classList.toggle("hidden");
+    });
+
+    document.getElementById("form-lista").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.submitter || e.target.querySelector("button[type='submit']");
+      const lineas = document.getElementById("l-nombres").value
+        .split("\n")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(linea => {
+          const partes = linea.split(/,|;/).map(s => s.trim());
+          const nombre = partes[0] || "";
+          const url = partes.slice(1).find(p => /^https?:\/\//.test(p)) || "";
+          return { nombre, foto: url };
+        })
+        .filter(x => x.nombre);
+      if (!lineas.length) {
+        toast("Pega al menos un nombre");
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Agregando " + lineas.length + " cartas...";
+      try {
+        const categoria = document.getElementById("l-categoria").value.trim() || "Deporte";
+        const dueno = document.getElementById("l-dueno").value.trim() || "Yo";
+        const tamano = 400;
+        for (let i = 0; i < lineas.length; i += tamano) {
+          const batch = db.batch();
+          lineas.slice(i, i + tamano).forEach(item => {
+            batch.set(userCol("productos").doc(), {
+              nombre: item.nombre,
+              categoria,
+              dueno,
+              cantidad: 1,
+              costo: 0,
+              precio: 0,
+              foto: item.foto,
+              creado: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          });
+          await batch.commit();
+        }
+        e.target.reset();
+        document.getElementById("l-categoria").value = "Deporte";
+        document.getElementById("l-dueno").value = "Yo";
+        toast(lineas.length + " cartas agregadas en " + categoria + ". Ponles precios con ✏️ Editar.");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+      btn.disabled = false;
+      btn.textContent = "Agregar todas";
+    });
+
+    function fotoADataUrl(file) {
+      return new Promise((resolve) => {
+        if (!file || !file.type.startsWith("image/")) return resolve("");
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxSize = 600;
+            let w = img.width, h = img.height;
+            if (w > maxSize || h > maxSize) {
+              if (w >= h) { h = Math.round(h * maxSize / w); w = maxSize; }
+              else { w = Math.round(w * maxSize / h); h = maxSize; }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", 0.8));
+          };
+          img.onerror = () => resolve("");
+          img.src = ev.target.result;
+        };
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById("btn-fotos-masivas").addEventListener("click", () => {
+      document.getElementById("file-fotos").click();
+    });
+
+    document.getElementById("file-fotos").addEventListener("change", async (e) => {
+      const files = [...e.target.files];
+      if (!files.length) return;
+      const hint = document.querySelector("#btn-fotos-masivas + input + .import-hint") || null;
+      const hintOriginal = hint ? hint.textContent : "";
+      try {
+        const categoria = filtroCat !== "todos" ? filtroCat : "Deporte";
+        const dueno = filtroDueno !== "todos" ? filtroDueno : "Yo";
+        let hechas = 0, fallidas = 0;
+        for (const file of files) {
+          if (hint) hint.textContent = "Procesando foto " + (hechas + fallidas + 1) + " de " + files.length + "...";
+          const dataUrl = await fotoADataUrl(file);
+          if (!dataUrl) { fallidas++; continue; }
+          const nombre = file.name.replace(/\.[^.]+$/, "");
+          await userCol("productos").add({
+            nombre,
+            categoria,
+            dueno,
+            cantidad: 1,
+            costo: 0,
+            precio: 0,
+            foto: dataUrl,
+            creado: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          hechas++;
+        }
+        toast(hechas + " cartas agregadas con su foto" +
+          (fallidas ? " (" + fallidas + " archivos no se pudieron leer)" : "") +
+          ". Ahora ponles nombre y precio con ✏️ Editar.");
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+      if (hint) hint.textContent = hintOriginal;
+      e.target.value = "";
+    });
 
     document.getElementById("btn-importar").addEventListener("click", () => {
       document.getElementById("file-collectr").click();
@@ -1557,6 +1708,15 @@
     });
 
     document.getElementById("e-foto-url").addEventListener("input", actualizarPreviewEdit);
+
+    document.getElementById("btn-buscar-img").addEventListener("click", () => {
+      const nombre = document.getElementById("e-nombre").value.trim();
+      if (!nombre) {
+        toast("Pon primero el nombre de la carta");
+        return;
+      }
+      window.open("https://www.google.com/search?q=" + encodeURIComponent(nombre) + "&tbm=isch", "_blank");
+    });
 
     function cerrarModalEditar() {
       editandoId = null;
